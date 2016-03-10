@@ -1,5 +1,4 @@
-from control import Planner
-from control import broadcast
+from control import Planner, broadcast
 
 
 class Stack(list, Planner):
