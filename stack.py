@@ -1,42 +1,47 @@
-# Temporary function
-
-def broadcast(msg):
-    pass
+from control import Planner
+from control import broadcast
 
 
-class Stack(list):
+class Stack(list, Planner):
+
+    # Storage
+
+    _dreq = "_noop"
+    _req2func = {
+        "NOP": "_noop",
+        "EMP": "_empty",
+        "POP": "_discard",
+        "DUP": "_duplicate",
+        "COP": "_copy",
+        "SWP": "_swap",
+        "ROT": "_rotate",
+        "LTS": "_ltrans",
+        "RTS": "_rtrans",
+    }
+    _req2arity = {
+        "NOP": [0],
+        "EMP": [0],
+        "POP": [0],
+        "DUP": [0],
+        "COP": [0, 1],
+        "SWP": [0],
+        "ROT": [0],
+        "LTS": [0, 1],
+        "RTS": [0, 1],
+    }
 
     # Controllers
 
-    reqs = {
-        "NOP": "__noop",
-        "EMP": "__empty",
-        "POP": "__discard",
-        "DUP": "__duplicate",
-        "COP": "__copy",
-        "SWP": "__swap",
-        "ROT": "__rotate",
-        "LTS": "__ltrans",
-        "RTS": "__rtrans",
-    }
-
     def __init__(self, *args):
+        """
+        Description:
+            Initialize the super classes.
+        Usage:
+            (       ) : []
+            (1, 2, 3) : [1  2  3]
+        """
+        Planner.__init__(self)
         list.__init__(self, list(args))
-        self.creq = None
-
-    def request(self, action, *args, **kwargs):
-        self.creq = Stack.reqs.get(action, "_noop")
-        func = eval("self." + self.creq)
-        func(*args, **kwargs)
-        return self
-
-    def toapprove(func):
-        def filtered(*args, **kwargs):
-            if func.__name__ == args[0].creq:
-                func(*args, **kwargs)
-        return filtered
-
-    # Helpers
 
     def _pull(self, n, top):
         """
@@ -69,8 +74,8 @@ class Stack(list):
 
     # Manipulators
 
-    @toapprove
-    def __noop(self):
+    @Planner.toapprove
+    def _noop(self):
         """
         Description:
             Do nothing.
@@ -79,8 +84,8 @@ class Stack(list):
         """
         pass
 
-    @toapprove
-    def __empty(self):
+    @Planner.toapprove
+    def _empty(self):
         """
         Description:
             Remove all elements.
@@ -89,8 +94,8 @@ class Stack(list):
         """
         list.clear(self)
 
-    @toapprove
-    def __discard(self):
+    @Planner.toapprove
+    def _discard(self):
         """
         Description:
             Discard the top element.
@@ -100,10 +105,10 @@ class Stack(list):
         if self._islength(1):
             self._pull(1, True)
         else:
-            broadcast(0)
+            broadcast(1, 1)
 
-    @toapprove
-    def __duplicate(self):
+    @Planner.toapprove
+    def _duplicate(self):
         """
         Description:
             Duplicate the top element.
@@ -114,10 +119,10 @@ class Stack(list):
             mv = self._pull(1, True)
             list.__iadd__(self, mv + mv)
         else:
-            broadcast(0)
+            broadcast(1, 1)
 
-    @toapprove
-    def __copy(self, n=0):
+    @Planner.toapprove
+    def _copy(self, n=0):
         """
         Description:
             Top element becomes the nth-from-top element.
@@ -130,10 +135,10 @@ class Stack(list):
             elem = list.__getitem__(self, -n-1)
             list.append(self, elem)
         else:
-            broadcast(0)
+            broadcast(1, n+1)
 
-    @toapprove
-    def __swap(self):
+    @Planner.toapprove
+    def _swap(self):
         """
         Description:
             Swap the top 2 elements.
@@ -144,10 +149,10 @@ class Stack(list):
             mv = self._pull(2, True)
             list.__iadd__(self, mv)
         else:
-            broadcast(0)
+            broadcast(1, 2)
 
-    @toapprove
-    def __rotate(self):
+    @Planner.toapprove
+    def _rotate(self):
         """
         Description:
             Rotate the top 3 elements to the left.
@@ -156,12 +161,12 @@ class Stack(list):
         """
         if self._islength(3):
             mv = self._pull(3, True)[::-1]
-            list.__iadd__(self, Stack(mv).lshift())
+            list.__iadd__(self, mv[1:] + mv[:1])
         else:
-            broadcast(0)
+            broadcast(1, 3)
 
-    @toapprove
-    def __ltrans(self, n=1):
+    @Planner.toapprove
+    def _ltrans(self, n=1):
         """
         Description:
             Rotate the stack to the left.
@@ -177,8 +182,8 @@ class Stack(list):
                 list.__iadd__(self, mv)
                 n -= 1
 
-    @toapprove
-    def __rtrans(self, n=1):
+    @Planner.toapprove
+    def _rtrans(self, n=1):
         """
         Description:
             Rotate the stack to the right.
@@ -190,12 +195,6 @@ class Stack(list):
         """
         if self._islength(2):
             while n > 0:
-                mv = self._pull(n, True)
-                self.reverse()
-                list.__iadd__(self, mv)
-                self.reverse()
+                mv = self._pull(1, True)
+                list.insert(self, 0, mv.pop())
                 n -= 1
-
-    # Cleanup
-
-    del toapprove
