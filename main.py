@@ -16,12 +16,7 @@ class Gogh(Director, Stack):
         110: "_tonumber",
         115: "_tostring",
     }
-    _req2arities = {
-        0  : 0,
-        97 : 0,
-        110: 0,
-        115: 0,
-    }
+    _req2arities = {}
     _req2argtype = {}
     _req2default = {}
 
