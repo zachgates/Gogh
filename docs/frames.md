@@ -1,6 +1,6 @@
-# Atoms
+# Frames
 
-Atoms are Jelly's built-in links. **z** will denote the only argument of a monadic function, **x** and **y** the left and right arguments of a dyadic one.
+Frames are Gogh's built-in functions.
 
 Symbol|Arity|Function|Note
 ------|-----|--------|----
