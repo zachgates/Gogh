@@ -18,16 +18,20 @@ class Stack(list, Planner):
         250: "_ltrans",
         251: "_rtrans",
     }
-    _req2arity = {
-        3  : [0],
-        5  : [0],
-        6  : [0, 1],
-        8  : [0],
-        17 : [0],
-        28 : [0],
-        32 : [0],
-        250: [0, 1],
-        251: [0, 1],
+    _req2arities = {
+        6  : 1,
+        250: 1,
+        251: 1,
+    }
+    _req2argtype = {
+        6  : [int],
+        250: [int],
+        251: [int],
+    }
+    _req2default = {
+        6  : [0],
+        250: [1],
+        251: [1],
     }
 
     # Controllers
@@ -37,13 +41,19 @@ class Stack(list, Planner):
         list.__init__(self)
         self._push(*args)
 
+    def __repr__(self):
+        elems = " ".join(repr(i) for i in self)
+        return "[%s]" % elems
+
     def _push(self, *args):
         for elem in args:
-            if isinstance(elem, (list, tuple)):
+            if isinstance(elem, (str, GoghString)):
+                val = GoghString(elem)
+            elif isinstance(elem, (list, tuple, GoghArray)):
                 val = GoghArray(elem)
-            elif isinstance(elem, int):
+            elif isinstance(elem, (int, GoghInteger)):
                 val = GoghInteger(elem)
-            elif isinstance(elem, float):
+            elif isinstance(elem, (float, GoghDecimal)):
                 val = GoghDecimal(elem)
             else:
                 val = GoghString(elem)
@@ -57,11 +67,11 @@ class Stack(list, Planner):
 
     @property
     def _TOS(self):
-        return self._pull(1, True)
+        return self._pull(1, True)[0]
 
     @property
     def _BOS(self):
-        return self._pull(1, False)
+        return self._pull(1, False)[0]
 
     # Manipulators
 
@@ -84,12 +94,12 @@ class Stack(list, Planner):
     def _duplicate(self):
         if self._islength(1):
             mv = self._TOS
-            list.__iadd__(self, mv + mv)
+            list.__iadd__(self, [mv, mv])
         else:
             self.broadcast(3, 1)
 
     @Planner.toapprove
-    def _copy(self, n=0):
+    def _copy(self, n):
         if self._islength(n+1) and (n == abs(n)):
             elem = list.__getitem__(self, -n-1)
             list.append(self, elem)
@@ -113,17 +123,15 @@ class Stack(list, Planner):
             self.broadcast(3, 3)
 
     @Planner.toapprove
-    def _ltrans(self, n=1):
+    def _ltrans(self, n):
         if self._islength(2):
             while n > 0:
-                mv = self._BOS
-                list.__iadd__(self, mv)
+                list.__iadd__(self, [self._BOS])
                 n -= 1
 
     @Planner.toapprove
-    def _rtrans(self, n=1):
+    def _rtrans(self, n):
         if self._islength(2):
             while n > 0:
-                mv = self._TOS
-                list.insert(self, 0, mv.pop())
+                list.insert(self, 0, self._TOS)
                 n -= 1
