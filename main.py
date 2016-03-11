@@ -30,26 +30,44 @@ class Gogh(Director, Stack):
         Stack.__init__(self, ip)
         if err != None:
             self.broadcast(*err)
+        self.cchar = None
         self.frames = self._tokenize(code)
 
     def _tokenize(self, code):
         for char in code:
             reqcode = code_page.index(char)
+            self.cchar = char
             self.request(reqcode)
-        self._update(self._TOS)
-        self.broadcast(0)
+        self._exit(0)
+
+    def _exit(self, code):
+        if self._islength(1):
+            Director._update(self, self._TOS)
+        self.broadcast(code)
 
     # Manipulators
 
     def _output(self):
-        self._update(self._TOS, True)
-        self.broadcast(0)
+        if self._islength(1):
+            self._update(self._TOS, True)
+            self.broadcast(0)
+        else:
+            self.broadcast(3, 1)
 
     def _toarray(self):
-        self._push(self._TOS._toarray())
+        if self._islength(1):
+            self._push(self._TOS._toarray())
+        else:
+            self.broadcast(3, 1)
 
     def _tonumber(self):
-        self._push(self._TOS._tonumber())
+        if self._islength(1):
+            self._push(self._TOS._tonumber())
+        else:
+            self.broadcast(3, 1)
 
     def _tostring(self):
-        self._push(self._TOS._tostring())
+        if self._islength(1):
+            self._push(self._TOS._tostring())
+        else:
+            self.broadcast(3, 1)
