@@ -14,4 +14,7 @@ class FileError(GoghError):
 
 
 class StackUnderflow(GoghError):
-    """This operation requires at least {0} element{1} in the stack."""
+    """The operation {0} requires at least {1} element{2} in the stack."""
+
+    def __new__(cls, char, arity):
+        return GoghError.__new__(cls, char, arity, "s" if arity > 1 else "")

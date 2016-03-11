@@ -90,5 +90,5 @@ class Director(object):
     def _fileerror(self, path):
         self._error(1, path)
 
-    def _underflow(self, n):
-        self._error(2, n)
+    def _underflow(self, arity):
+        self._error(2, self.cchar, arity)
