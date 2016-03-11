@@ -1,4 +1,4 @@
-Gogh programs consist of up to 257 different Unicode characters, which are encoded using either UTF-8 or the [Jelly](https://github.com/DennisMitchell/jelly) code page. All characters have been chosen so that they can be typed on an US keyboard with international layout.
+Gogh programs consist of up to 257 different Unicode characters, which are encoded using the [Jelly](https://github.com/DennisMitchell/jelly) code page. All characters have been chosen so that they can be typed on an US keyboard with international layout.
 
 The character `¶` and the linefeed character can be used interchangeably, although it is advised to use a linefeed to separate frames, and a pilcrow inside string literals.
 
