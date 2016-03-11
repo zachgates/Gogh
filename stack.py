@@ -36,10 +36,11 @@ class Stack(list, Planner):
 
     # Controllers
 
-    def __init__(self, *args):
+    def __init__(self, onstack=None):
         Planner.__init__(self)
         list.__init__(self)
-        self._push(*args)
+        if onstack:
+            self._push(onstack)
 
     def __repr__(self):
         elems = " ".join(repr(i) for i in self)
