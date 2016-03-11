@@ -1,4 +1,5 @@
 from control import Planner
+from gtypes import GoghString, GoghInteger, GoghDecimal, GoghArray
 
 
 class Stack(list, Planner):
@@ -7,26 +8,26 @@ class Stack(list, Planner):
 
     _dreq = "_noop"
     _req2func = {
-        "NOP": "_noop",
-        "EMP": "_empty",
-        "POP": "_discard",
-        "DUP": "_duplicate",
-        "COP": "_copy",
-        "SWP": "_swap",
-        "ROT": "_rotate",
-        "LTS": "_ltrans",
-        "RTS": "_rtrans",
+        3  : "_empty",
+        5  : "_swap",
+        6  : "_copy",
+        8  : "_rotate",
+        11 : "_duplicate",
+        17 : "_discard",
+        32 : "_noop",
+        250: "_ltrans",
+        251: "_rtrans",
     }
     _req2arity = {
-        "NOP": [0],
-        "EMP": [0],
-        "POP": [0],
-        "DUP": [0],
-        "COP": [0, 1],
-        "SWP": [0],
-        "ROT": [0],
-        "LTS": [0, 1],
-        "RTS": [0, 1],
+        3  : [0],
+        5  : [0],
+        6  : [0, 1],
+        8  : [0],
+        11 : [0],
+        17 : [0],
+        32 : [0],
+        250: [0, 1],
+        251: [0, 1],
     }
 
     # Controllers
@@ -37,19 +38,30 @@ class Stack(list, Planner):
         self._push(*args)
 
     def _push(self, *args):
-        pass
+        for elem in args:
+            if isinstance(elem, (list, tuple)):
+                val = GoghArray(elem)
+            elif isinstance(elem, int):
+                val = GoghInteger(elem)
+            elif isinstance(elem, float):
+                val = GoghDecimal(elem)
+            else:
+                val = GoghString(elem)
+            list.append(self, val)
 
     def _pull(self, n, top):
-        mv = []
-        for i in range(n):
-            if not top:
-                mv.append(list.pop(self, 0))
-            else:
-                mv.append(list.pop(self))
-        return mv
+        return [list.pop(self, ~top+1) for i in range(n)]
 
     def _islength(self, n):
         return len(self) >= n
+
+    @property
+    def _TOS(self):
+        return self._pull(1, True)
+
+    @property
+    def _BOS(self):
+        return self._pull(1, False)
 
     # Manipulators
 
@@ -64,14 +76,14 @@ class Stack(list, Planner):
     @Planner.toapprove
     def _discard(self):
         if self._islength(1):
-            self._pull(1, True)
+            self._TOS
         else:
             self.broadcast(3, 1)
 
     @Planner.toapprove
     def _duplicate(self):
         if self._islength(1):
-            mv = self._pull(1, True)
+            mv = self._TOS
             list.__iadd__(self, mv + mv)
         else:
             self.broadcast(3, 1)
@@ -104,7 +116,7 @@ class Stack(list, Planner):
     def _ltrans(self, n=1):
         if self._islength(2):
             while n > 0:
-                mv = self._pull(1, False)
+                mv = self._BOS
                 list.__iadd__(self, mv)
                 n -= 1
 
@@ -112,6 +124,6 @@ class Stack(list, Planner):
     def _rtrans(self, n=1):
         if self._islength(2):
             while n > 0:
-                mv = self._pull(1, True)
+                mv = self._TOS
                 list.insert(self, 0, mv.pop())
                 n -= 1
