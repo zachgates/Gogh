@@ -61,8 +61,8 @@ class Director(object):
             func = eval("self." + funcname)
             func(*args)
 
-    def _update(self, out):
-        if self.out != False:
+    def _update(self, out, override=False):
+        if (self.out != False) or override:
             self.out = repr(out)
 
     def _error(self, code, *args, **kwargs):
