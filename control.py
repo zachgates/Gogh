@@ -2,37 +2,6 @@ import sys
 import errors
 
 
-global ctrl
-global broadcast
-
-
-class Director(object):
-
-    # Storage
-
-    code2func = {
-        0: "_cleanexit",
-        1: "_underflow",
-    }
-
-    # Controllers
-
-    def broadcast(self, code, *args):
-        func_name = Director.code2func.get(code)
-        if func_name:
-            func = eval("self." + func_name)
-            func(*args)
-
-    # Manipulators
-
-    def _cleanexit(self):
-        sys.exit()
-
-    def _underflow(self, n):
-        sys.stderr.write(errors.StackUnderflow(n).msg)
-        sys.exit()
-
-
 class Planner(object):
 
     # Controllers
@@ -64,5 +33,54 @@ class Planner(object):
         return self
 
 
-ctrl = Director()
-broadcast = ctrl.broadcast
+class Director(object):
+
+    # Storage
+
+    code2func = {
+        0: "_cleanexit",
+        1: "_clierror",
+        2: "_fileerror",
+        3: "_underflow",
+    }
+    code2err = {
+        0: errors.CLIError,
+        1: errors.FileError,
+        2: errors.StackUnderflow,
+    }
+
+    # Controllers
+
+    def __init__(self, endchar):
+        self.end = endchar
+
+    def broadcast(self, code, *args):
+        funcname = Director.code2func.get(code)
+        if funcname:
+            func = eval("self." + funcname)
+            func(*args)
+
+    def _error(self, code, *args, **kwargs):
+        err = Director.code2err.get(code)
+        sys.stderr.write(err(*args))
+        self._cleanup(err=True, **kwargs)
+
+    def _cleanup(self, err=False, override=False):
+        if not override:
+            stream = sys.stderr if err else sys.stdout
+            stream.write(self.end)
+        sys.exit()
+
+    # Manipulators
+
+    def _cleanexit(self):
+        self._cleanup()
+
+    def _clierror(self):
+        self._error(0, override=True)
+
+    def _fileerror(self, path):
+        self._error(1, path)
+
+    def _underflow(self, n):
+        self._error(2, n)
