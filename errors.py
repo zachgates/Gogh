@@ -1,8 +1,17 @@
-class StackUnderflow:
+class GoghError(str):
 
-    temp = ": This operation requires at least {0} element{1} in the stack."
+    def __new__(cls, *args):
+        msg = (cls.__name__, cls.__doc__.format(*args))
+        return str.__new__(cls, "%s: %s" % msg)
 
-    def __init__(self, n):
-        plural = "s" if (n > 1) else ""
-        self.msg = self.__class__.__name__
-        self.msg += self.temp.format(n, plural)
+
+class CLIError(GoghError):
+    """Command line arguments were not supplied correctly.\n"""
+
+
+class FileError(GoghError):
+    """'{0}' does not exist."""
+
+
+class StackUnderflow(GoghError):
+    """This operation requires at least {0} element{1} in the stack."""
