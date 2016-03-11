@@ -37,7 +37,7 @@ class GoghCLIHandler(object):
         "s": str,
         "i": int,
         "d": float,
-        "l": clist,
+        "a": clist,
     }
 
     # Controllers
