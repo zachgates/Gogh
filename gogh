@@ -1,0 +1,76 @@
+#!/usr/bin/env python3
+
+
+import sys
+import os
+import re
+import main
+
+
+class clist(list):
+
+    e_regex = "'([^']+)'"
+    f_regex = "(\d+)?\.\d+"
+
+    def __init__(self, cstring):
+        elems = re.findall(clist.e_regex, cstring)
+        items = re.sub(clist.e_regex, "", cstring).split(" ")
+        list.__init__(self, self._read(items, elems))
+
+    def _read(self, rems, reps):
+        for val in rems:
+            if not val:
+                yield reps.pop(0)
+            elif val.isnumeric():
+                yield int(val)
+            elif re.match(clist.f_regex, val):
+                yield float(val)
+            else:
+                yield str(val)
+
+
+class GoghCLIHandler(object):
+
+    # Storage
+
+    _itypes = {
+        "s": str,
+        "i": int,
+        "d": float,
+        "l": clist,
+    }
+
+    # Controllers
+
+    def __init__(self, flags=None, code=None, ip=None, *args):
+        self.flags = flags
+        self.code = None
+        self.ip = self._getiptype()(ip) if ip != None else None
+        self.err = None if (flags != None) and (code != None) else [1]
+        if (flags and code) and ("f" in flags):
+            if os.path.isfile(code):
+                with open(code, 'rb') as f:
+                    self.code = f.read()
+            else:
+                self.err = [2, code]
+        elif (flags and code) and ("c" in flags):
+            self.code = code
+        else:
+            self.err = [1]
+
+    def _getiptype(self):
+        if self.flags:
+            mtypes = sum(map(lambda i: i in GoghCLIHandler._itypes, self.flags))
+            if 0 < mtypes < 2:
+                find = GoghCLIHandler._itypes.get
+                return [find(i) for i in self.flags if find(i)][0]
+            else:
+                self.err = [1]
+        return str
+
+    def run(self):
+        end = "\n" if (not self.flags) or ("n" in self.flags) else ""
+        return main.Gogh(self.code, self.ip, self.err, end)
+
+
+instance = GoghCLIHandler(*sys.argv[1:]).run()
