@@ -15,21 +15,21 @@ class Planner(object):
                 func(*args)
         return filtered
 
-    def request(self, action, *args):
+    def request(self, action):
         self._creq = self._req2func.get(action, self._dreq)
         func = eval("self." + self._creq)
-        func(*args)
+        args = self._pull(self._req2arities.get(action, 0), True)[::-1]
+        argtypes = self._req2argtype.get(action, [])
+        if all(isinstance(k, v) for k, v in zip(args, argtypes)):
+            func(*args)
+        else:
+            self._push(*args)
+            func(*self._req2default.get(action, []))
         return self
 
-    def chain(self, actions, arglist=[]):
-        arity = map(self._req2arity.get, actions)
-        needs = zip(actions, arity)
-        for req, na in needs:
-            args = arglist.pop(0) if (arglist and sum(na)) else []
-            if not args and (0 not in na):
-                break
-            else:
-                self.request(req, *args)
+    def chain(self, actions):
+        for act in actions:
+            self.request(act)
         return self
 
 
