@@ -39,7 +39,7 @@ class Stack(list, Planner):
     def __init__(self, onstack=None):
         Planner.__init__(self)
         list.__init__(self)
-        if onstack:
+        if onstack != None:
             self._push(onstack)
 
     def __repr__(self):

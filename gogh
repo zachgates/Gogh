@@ -5,6 +5,7 @@ import sys
 import os
 import re
 import main
+import gtypes
 
 
 class clist(list):
@@ -34,9 +35,9 @@ class GoghCLIHandler(object):
     # Storage
 
     _itypes = {
-        "s": str,
-        "i": int,
-        "d": float,
+        "s": gtypes.GoghString,
+        "i": gtypes.GoghInteger,
+        "d": gtypes.GoghDecimal,
         "a": clist,
     }
 
@@ -54,7 +55,7 @@ class GoghCLIHandler(object):
                     self.code = f.read()
             else:
                 self.err = [2, code]
-        elif (flags != None) and ("c" in flags) and (code != None):
+        elif (code != None):
             self.code = code
         else:
             self.err = [1]
