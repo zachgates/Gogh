@@ -92,3 +92,6 @@ class GoghString(GoghArray):
 
     def __repr__(self):
         return "".join(str(i) for i in self)
+
+    def _output(self):
+        return str(self)

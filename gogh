@@ -46,14 +46,15 @@ class GoghCLIHandler(object):
         self.flags = flags
         self.code = None
         self.ip = self._getiptype()(ip) if ip != None else None
+        self.out = bool("o" in flags) if (flags != None) else False
         self.err = None if (flags != None) and (code != None) else [1]
-        if (flags and code) and ("f" in flags):
+        if (flags != None) and ("f" in flags) and (code != None):
             if os.path.isfile(code):
                 with open(code, 'rb') as f:
                     self.code = f.read()
             else:
                 self.err = [2, code]
-        elif (flags and code) and ("c" in flags):
+        elif (flags != None) and ("c" in flags) and (code != None):
             self.code = code
         else:
             self.err = [1]
@@ -70,7 +71,7 @@ class GoghCLIHandler(object):
 
     def run(self):
         end = "\n" if (not self.flags) or ("n" in self.flags) else ""
-        return main.Gogh(self.code, self.ip, self.err, end)
+        return main.Gogh(self.code, self.ip, self.out, self.err, end)
 
 
 instance = GoghCLIHandler(*sys.argv[1:]).run()
