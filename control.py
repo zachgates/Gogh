@@ -51,7 +51,8 @@ class Director(object):
 
     # Controllers
 
-    def __init__(self, endchar):
+    def __init__(self, out, endchar):
+        self.out = out
         self.end = endchar
 
     def broadcast(self, code, *args):
@@ -59,6 +60,10 @@ class Director(object):
         if funcname:
             func = eval("self." + funcname)
             func(*args)
+
+    def _update(self, out):
+        if self.out != False:
+            self.out = repr(out)
 
     def _error(self, code, *args, **kwargs):
         err = Director.code2err.get(code)
@@ -74,6 +79,8 @@ class Director(object):
     # Manipulators
 
     def _cleanexit(self):
+        if self.out != False:
+            sys.stdout.write(self.out)
         self._cleanup()
 
     def _clierror(self):
