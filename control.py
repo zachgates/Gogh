@@ -73,13 +73,14 @@ class Director(object):
     def _cleanup(self, err=False, override=False):
         if not override:
             stream = sys.stderr if err else sys.stdout
-            stream.write(self.end)
+            if not isinstance(self.out, bool) or err or override:
+                stream.write(self.end)
         sys.exit()
 
     # Manipulators
 
     def _cleanexit(self):
-        if self.out != False:
+        if not isinstance(self.out, bool):
             sys.stdout.write(self.out)
         self._cleanup()
 
