@@ -32,6 +32,6 @@ Flag|Description
 Type|Usage
 ----|-----
 string|The proper way to input a string is wrapped in double quotes like this: `"123"`. However, string input is the default, so if no input flag is provided, the input will be read as a string regardless.
-array|Arrays must me wrapped in double quotes, with only single quotes inside to denote strings. `"'123' 4 5.0 '6.7'"` will evaluate to `["123", 4, 5.0, "6.7"]`. Inputting a nested array is not possible.
+array|Arrays must be wrapped in double quotes. `"'123' 4 5.0 '6.7'"` will evaluate to `["123", 4, 5.0, "6.7"]`. Inputting a nested array is not possible. Single quotes should be used to denote strings.
 integer|Integers can be taken directly as numbers: `123` — or wrapped in quotations: `"123"`.
 decimal|Decimals can be taken as integers, or as strings matching the regular expression `"(\d+)?\.\d+"`, where `.` evaluates to `0.0`.
