@@ -19,6 +19,12 @@ class Gogh(Director, Stack):
     _req2arities = {}
     _req2argtype = {}
     _req2default = {}
+    _req2stack = {
+        0  : 1,
+        97 : 1,
+        110: 1,
+        115: 1,
+    }
 
     _req2func.update(Stack._req2func)
     _req2arities.update(Stack._req2arities)
@@ -37,8 +43,16 @@ class Gogh(Director, Stack):
         for char in code:
             reqcode = code_page.index(char)
             self.cchar = char
-            self.request(reqcode)
+            self._request(reqcode)
         self._exit(0)
+
+    def _request(self, action):
+        areq = self._req2func.get(action, self._dreq)
+        if not getattr(super(), areq, False):
+            rlen = self._req2stack.get(action, 0)
+            if not self._islength(rlen):
+                self.broadcast(3, rlen)
+        Planner.request(self, action)
 
     def _exit(self, code):
         if self._islength(1):
@@ -47,27 +61,22 @@ class Gogh(Director, Stack):
 
     # Manipulators
 
+    @Planner.toapprove
     def _output(self):
-        if self._islength(1):
-            self._update(self._TOS, True)
-            self.broadcast(0)
-        else:
-            self.broadcast(3, 1)
+        self._update(self._TOS, True)
+        self.broadcast(0)
 
+    @Planner.toapprove
     def _toarray(self):
-        if self._islength(1):
-            self._push(self._TOS._toarray())
-        else:
-            self.broadcast(3, 1)
+        retval = self._TOS._toarray()
+        self._push(retval)
 
+    @Planner.toapprove
     def _tonumber(self):
-        if self._islength(1):
-            self._push(self._TOS._tonumber())
-        else:
-            self.broadcast(3, 1)
+        retval = self._TOS._tonumber()
+        self._push(retval)
 
+    @Planner.toapprove
     def _tostring(self):
-        if self._islength(1):
-            self._push(self._TOS._tostring())
-        else:
-            self.broadcast(3, 1)
+        retval = self._TOS._tostring()
+        self._push(retval)
