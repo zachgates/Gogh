@@ -74,7 +74,7 @@ class Gogh(Director, Stack):
 
     def _tokenize(self, code):
         for char in code:
-            reqcode = code_page.index(char)
+            reqcode = code_page.index(char) if char != "\n" else 32
             if not self.strlit:
                 if reqcode == 46 or reqcode in range(48, 58):
                     self._setintreg(char)
@@ -84,13 +84,13 @@ class Gogh(Director, Stack):
                     elif self.intreg:
                         self._push(GoghInteger(self.intreg))
                     self._empintreg()
-                if reqcode == 34:
+                if reqcode == 39:
                     self.strlit = True
                 else:
                     self.cchar = char
                     self._request(reqcode)
             else:
-                if reqcode == 34:
+                if reqcode == 39:
                     self._push(GoghString(self.strreg))
                     self._empstrreg()
                 else:
@@ -137,7 +137,7 @@ class Gogh(Director, Stack):
 
     @Planner.toapprove
     def _output(self, tos):
-        self._update(tos, True)
+        self._update(tos._output(), True)
         self.broadcast(0)
 
     @Planner.toapprove

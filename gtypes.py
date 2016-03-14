@@ -289,7 +289,12 @@ class GoghString(GoghArray):
         return "".join(str(i) for i in self)
 
     def __repr__(self):
-        return "'%s'" % "".join(str(i) for i in self)
+        return "'%s'" % "".join(str(i) if i != "\n" else "\\n" for i in self)
+
+    # Output
+
+    def _output(self):
+        return str(self)
 
     # Conversions
 

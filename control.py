@@ -63,7 +63,7 @@ class Director(object):
 
     def _update(self, out, override=False):
         if (self.out != False) or override:
-            self.out = repr(out)
+            self.out = out
 
     def _error(self, code, *args, **kwargs):
         err = Director.code2err.get(code)
