@@ -289,7 +289,7 @@ class GoghString(GoghArray):
         return "".join(str(i) for i in self)
 
     def __repr__(self):
-        return "".join(str(i) for i in self)
+        return "'%s'" % "".join(str(i) for i in self)
 
     # Conversions
 

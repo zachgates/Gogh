@@ -68,22 +68,33 @@ class Gogh(Director, Stack):
             self.broadcast(*err)
         self.cchar = None
         self.intreg = None
+        self.strreg = None
+        self.strlit = False
         self.frames = self._tokenize(code)
 
     def _tokenize(self, code):
         for char in code:
             reqcode = code_page.index(char)
-            if reqcode == 46 or reqcode in range(48, 58):
-                self._setintreg(char)
-            else:
-                if self.intreg != None:
-                    if "." in self.intreg:
+            if not self.strlit:
+                if reqcode == 46 or reqcode in range(48, 58):
+                    self._setintreg(char)
+                else:
+                    if self.intreg and "." in self.intreg:
                         self._push(GoghDecimal(self.intreg))
-                    else:
+                    elif self.intreg:
                         self._push(GoghInteger(self.intreg))
                     self._empintreg()
-                self.cchar = char
-                self._request(reqcode)
+                if reqcode == 34:
+                    self.strlit = True
+                else:
+                    self.cchar = char
+                    self._request(reqcode)
+            else:
+                if reqcode == 34:
+                    self._push(GoghString(self.strreg))
+                    self._empstrreg()
+                else:
+                    self._setstrreg(char)
         self._exit(0)
 
     def _request(self, action):
@@ -99,6 +110,8 @@ class Gogh(Director, Stack):
             Director._update(self, self._TOS)
         self.broadcast(code)
 
+    # Integer Literals
+
     def _setintreg(self, char):
         if self.intreg != None:
             self.intreg += char
@@ -107,6 +120,18 @@ class Gogh(Director, Stack):
 
     def _empintreg(self):
         self.intreg = None
+
+    # String Literals
+
+    def _setstrreg(self, char):
+        if self.strreg != None:
+            self.strreg += char
+        else:
+            self.strreg = char
+
+    def _empstrreg(self):
+        self.strlit = False
+        self.strreg = None
 
     # Manipulators
 
