@@ -21,13 +21,13 @@ class clist(list):
     def _read(self, rems, reps):
         for val in rems:
             if not val:
-                yield reps.pop(0)
+                yield gtypes.GoghString(reps.pop(0))
             elif val.isnumeric():
-                yield int(val)
+                yield gtypes.GoghInteger(val)
             elif re.match(clist.f_regex, val):
-                yield float(val)
+                yield gtypes.GoghDecimal(val)
             else:
-                yield str(val)
+                yield gtypes.GoghString(val)
 
 
 class GoghCLIHandler(object):
@@ -68,7 +68,7 @@ class GoghCLIHandler(object):
                 return [find(i) for i in self.flags if find(i)][0]
             else:
                 self.err = [1]
-        return str
+        return gtypes.GoghString
 
     def run(self):
         end = "\n" if (not self.flags) or ("n" in self.flags) else ""
