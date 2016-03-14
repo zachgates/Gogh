@@ -6,24 +6,56 @@ import re
 
 class GoghObject(object):
 
-    def _tonumber(self):
-        """To be written in the superclass."""
-        return NotImplemented
+    # Manipulators
+
+    def _is(self, cls):
+        return isinstance(self, cls)
+
+    # Output
+
+    def _output(self):
+        return repr(self)
+
+    # Conversions
 
     def _toarray(self):
         return GoghArray(self)
 
+    def _tonumber(self):
+        """To be written in the superclass."""
+        return NotImplemented
+
     def _tostring(self):
         return GoghString(self)
 
-    def _output(self):
-        return repr(self)
+    # Arithmetic Operations
+
+    def __add__(self, value):
+        """To be written in the superclass."""
+        return NotImplemented
+
+    def __sub__(self, value):
+        """To be written in the superclass."""
+        return NotImplemented
+
+    def __mul__(self, value):
+        """To be written in the superclass."""
+        return NotImplemented
+
+    def __truediv__(self, value):
+        """To be written in the superclass."""
+        return NotImplemented
+
+    def __floordiv__(self, value):
+        return self.__truediv__(value) // 1
 
 
 # Numbers (Integers & Decimals)
 
 
 class GoghNumber(GoghObject):
+
+    # Conversions
 
     def _tonumber(self):
         return self
@@ -40,12 +72,37 @@ class GoghNumber(GoghObject):
     def _GoghArray__tonumber(value):
         return GoghInteger(len(value))
 
+    # Arithmetic Operations
 
-class GoghInteger(int, GoghNumber):
+    def __add__(self, value):
+        if self._is(GoghInteger):
+            if value._is(GoghInteger):
+                return GoghInteger(int(self) + int(value))
+            elif value._is(GoghDecimal):
+                return GoghDecimal(float(self) + float(value))
+        else:
+            if value._is(GoghNumber):
+                return GoghDecimal(float(self) + float(value))
+        if value._is(GoghString):
+            value = str(value)
+            if value.isnumeric():
+                return type(self)(float(self) + int(value))
+            elif re.match("(\d+)?\.(\d+)?", value):
+                value = 0 if value == "." else value
+                return type(self)(float(self) + float(value))
+            else:
+                return GoghString(str(self) + value)
+        else:
+            return GoghArray([self] + list(value))
+
+
+class GoghInteger(GoghNumber, int):
     pass
 
 
-class GoghDecimal(float, GoghNumber):
+class GoghDecimal(GoghNumber, float):
+
+    # Controllers
 
     def __new__(cls, value):
         if value == ".":
@@ -59,7 +116,7 @@ class GoghDecimal(float, GoghNumber):
 
 class GoghArray(list, GoghObject):
 
-    _tonumber = GoghNumber.__tonumber
+    # Controllers
 
     def __init__(self, value):
         if isinstance(value, GoghInteger):
@@ -76,13 +133,26 @@ class GoghArray(list, GoghObject):
         elems = " ".join(repr(i) for i in self)
         return "[%s]" % elems
 
+    # Conversions
+
+    _tonumber = GoghNumber.__tonumber
+
+    # Arithmetic Operations
+
+    def __add__(self, value):
+        if value._is(GoghNumber) or value._is(GoghString):
+            list.append(self, value)
+            return self
+        else:
+            return GoghArray(list(self) + list(value))
+
 
 # Strings
 
 
 class GoghString(GoghArray):
 
-    _tonumber = GoghNumber.__tonumber
+    # Controllers
 
     def __init__(self, value):
         GoghArray.__init__(self, str(value))
@@ -93,5 +163,20 @@ class GoghString(GoghArray):
     def __repr__(self):
         return "".join(str(i) for i in self)
 
+    # Output
+
     def _output(self):
         return str(self)
+
+    # Conversions
+
+    _tonumber = GoghNumber.__tonumber
+
+    # Arithmetic Operations
+
+    def __add__(self, value):
+        if value._is((GoghNumber, GoghString)):
+            retval = str(self) + str(value)
+        else:
+            retval = str(self) + "".join(str(i) for i in value)
+        return GoghString(retval)
