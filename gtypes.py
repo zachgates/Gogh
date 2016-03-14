@@ -177,6 +177,12 @@ class GoghDecimal(GoghNumber, float):
         else:
             return float.__new__(cls, value)
 
+    def __repr__(self):
+        fstr = ("%f" % float(self)).rstrip("0")
+        if fstr.endswith("."):
+            fstr += "0"
+        return fstr
+
     # Arithmetic Operations
 
     def __add__(self, value):

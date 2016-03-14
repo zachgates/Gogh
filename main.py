@@ -76,10 +76,10 @@ class Gogh(Director, Stack):
         for char in code:
             reqcode = code_page.index(char) if char != "\n" else 32
             if not self.strlit:
-                if reqcode == 46 or reqcode in range(48, 58):
+                if (reqcode == 46) or (reqcode in range(48, 58)):
                     self._setintreg(char)
                 else:
-                    if self.intreg and "." in self.intreg:
+                    if self.intreg and ("." in self.intreg):
                         self._push(GoghDecimal(self.intreg))
                     elif self.intreg:
                         self._push(GoghInteger(self.intreg))
@@ -114,6 +114,7 @@ class Gogh(Director, Stack):
 
     def _setintreg(self, char):
         if self.intreg != None:
+            char = "0" if (char in self.intreg) and (char == ".") else char
             self.intreg += char
         else:
             self.intreg = char

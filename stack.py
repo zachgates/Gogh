@@ -47,7 +47,7 @@ class Stack(list, Planner):
         return "[%s]" % elems
 
     def _push(self, *args):
-        for elem in filter(None, args):
+        for elem in filter(lambda i: i != None, args):
             if isinstance(elem, (str, GoghString)):
                 val = GoghString(elem)
             elif isinstance(elem, (list, tuple, GoghArray)):
