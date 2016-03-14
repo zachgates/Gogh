@@ -67,13 +67,23 @@ class Gogh(Director, Stack):
         if err != None:
             self.broadcast(*err)
         self.cchar = None
+        self.intreg = None
         self.frames = self._tokenize(code)
 
     def _tokenize(self, code):
         for char in code:
             reqcode = code_page.index(char)
-            self.cchar = char
-            self._request(reqcode)
+            if reqcode == 46 or reqcode in range(48, 58):
+                self._setintreg(char)
+            else:
+                if self.intreg != None:
+                    if "." in self.intreg:
+                        self._push(GoghDecimal(self.intreg))
+                    else:
+                        self._push(GoghInteger(self.intreg))
+                    self._empintreg()
+                self.cchar = char
+                self._request(reqcode)
         self._exit(0)
 
     def _request(self, action):
@@ -88,6 +98,15 @@ class Gogh(Director, Stack):
         if self._islength(1):
             Director._update(self, self._TOS)
         self.broadcast(code)
+
+    def _setintreg(self, char):
+        if self.intreg != None:
+            self.intreg += char
+        else:
+            self.intreg = char
+
+    def _empintreg(self):
+        self.intreg = None
 
     # Manipulators
 

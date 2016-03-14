@@ -8,6 +8,8 @@ class GoghObject(object):
 
     # Manipulators
 
+    _prec = lambda self, i: len(str(float(i)).split(".")[1])
+
     def _is(self, cls):
         return isinstance(self, cls)
 
@@ -74,11 +76,12 @@ class GoghNumber(GoghObject):
     def __add__(self, value):
         if value._is(GoghString):
             value = str(value)
+            prec = max(map(self._prec, [self, value]))
             if value.isnumeric():
-                return type(self)(float(self) + int(value))
+                return type(self)(round(float(self) + int(value), prec))
             elif re.match("(\d+)?\.(\d+)?", value):
                 value = 0 if value == "." else value
-                return type(self)(float(self) + float(value))
+                return type(self)(round(float(self) + float(value), prec))
             else:
                 return GoghString(str(self) + value)
         else:
@@ -87,11 +90,12 @@ class GoghNumber(GoghObject):
     def __sub__(self, value):
         if value._is(GoghString):
             value = str(value)
+            prec = max(map(self._prec, [self, value]))
             if value.isnumeric():
-                return type(self)(float(self) - int(value))
+                return type(self)(round(float(self) - int(value), prec))
             elif re.match("(\d+)?\.(\d+)?", value):
                 value = 0 if value == "." else value
-                return type(self)(float(self) - float(value))
+                return type(self)(round(float(self) - float(value), prec))
             else:
                 return GoghString(str(self).replace(value))
         else:
@@ -100,11 +104,12 @@ class GoghNumber(GoghObject):
     def __mul__(self, value):
         if value._is(GoghString):
             value = str(value)
+            prec = max(map(self._prec, [self, value]))
             if value.isnumeric():
-                return type(self)(float(self) * int(value))
+                return type(self)(round(float(self) * int(value), prec))
             elif re.match("(\d+)?\.(\d+)?", value):
                 value = 0 if value == "." else value
-                return type(self)(float(self) * float(value))
+                return type(self)(round(float(self) * float(value), prec))
             else:
                 return GoghString(value * int(self))
         else:
@@ -138,7 +143,8 @@ class GoghInteger(GoghNumber, int):
         if value._is(GoghInteger):
             return GoghInteger(int(self) + int(value))
         elif value._is(GoghDecimal):
-            return GoghDecimal(float(self) + float(value))
+            prec = max(map(self._prec, [self, value]))
+            return GoghDecimal(round(float(self) + float(value), prec))
         else:
             return GoghNumber.__add__(self, value)
 
@@ -146,7 +152,8 @@ class GoghInteger(GoghNumber, int):
         if value._is(GoghInteger):
             return GoghInteger(int(self) - int(value))
         elif value._is(GoghDecimal):
-            return GoghDecimal(float(self) - float(value))
+            prec = max(map(self._prec, [self, value]))
+            return GoghDecimal(round(float(self) - float(value), prec))
         else:
             return GoghNumber.__sub__(self, value)
 
@@ -154,7 +161,8 @@ class GoghInteger(GoghNumber, int):
         if value._is(GoghInteger):
             return GoghInteger(int(self) * int(value))
         elif value._is(GoghDecimal):
-            return GoghDecimal(float(self) * float(value))
+            prec = max(map(self._prec, [self, value]))
+            return GoghDecimal(round(float(self) * float(value), prec))
         else:
             return GoghNumber.__mul__(self, value)
 
@@ -173,19 +181,22 @@ class GoghDecimal(GoghNumber, float):
 
     def __add__(self, value):
         if value._is(GoghNumber):
-            return GoghDecimal(float(self) + float(value))
+            prec = max(map(self._prec, [self, value]))
+            return GoghDecimal(round(float(self) + float(value), prec))
         else:
             return GoghNumber.__add__(self, value)
 
     def __sub__(self, value):
         if value._is(GoghNumber):
-            return GoghDecimal(float(self) - float(value))
+            prec = max(map(self._prec, [self, value]))
+            return GoghDecimal(round(float(self) - float(value), prec))
         else:
             return GoghNumber.__sub__(self, value)
 
     def __mul__(self, value):
         if value._is(GoghNumber):
-            return GoghDecimal(float(self) * float(value))
+            prec = max(map(self._prec, [self, value]))
+            return GoghDecimal(round(float(self) * float(value), prec))
         else:
             return GoghNumber.__mul__(self, value)
 
