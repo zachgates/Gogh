@@ -95,6 +95,27 @@ class GoghNumber(GoghObject):
         else:
             return GoghArray([self] + list(value))
 
+    def __sub__(self, value):
+        if self._is(GoghInteger):
+            if value._is(GoghInteger):
+                return GoghInteger(int(self) - int(value))
+            elif value._is(GoghDecimal):
+                return GoghDecimal(float(self) - float(value))
+        else:
+            if value._is(GoghNumber):
+                return GoghDecimal(float(self) - float(value))
+        if value._is(GoghString):
+            value = str(value)
+            if value.isnumeric():
+                return type(self)(float(self) - int(value))
+            elif re.match("(\d+)?\.(\d+)?", value):
+                value = 0 if value == "." else value
+                return type(self)(float(self) - float(value))
+            else:
+                return GoghString(str(self).replace(value))
+        else:
+            return GoghArray([self-elem for elem in list(value)])
+
 
 class GoghInteger(GoghNumber, int):
     pass
@@ -120,9 +141,12 @@ class GoghArray(list, GoghObject):
 
     def __init__(self, value):
         if isinstance(value, GoghInteger):
-            list.__init__(self, range(value))
+            rng = range(int(value))
+            list.__init__(self, map(GoghInteger, rng))
         elif isinstance(value, GoghDecimal):
             list.__init__(self)
+        elif isinstance(value, GoghString):
+            list.__init__(self, [GoghString(elem) for elem in str(value)])
         else:
             list.__init__(self, value)
 
@@ -140,11 +164,17 @@ class GoghArray(list, GoghObject):
     # Arithmetic Operations
 
     def __add__(self, value):
-        if value._is(GoghNumber) or value._is(GoghString):
+        if value._is((GoghNumber, GoghString)):
             list.append(self, value)
             return self
         else:
             return GoghArray(list(self) + list(value))
+
+    def __sub__(self, value):
+        if value._is((GoghNumber, GoghString)):
+            return GoghArray([elem for elem in list(self) if elem != value])
+        else:
+            return GoghArray([elem for elem in list(self) if elem not in value])
 
 
 # Strings
@@ -163,11 +193,6 @@ class GoghString(GoghArray):
     def __repr__(self):
         return "".join(str(i) for i in self)
 
-    # Output
-
-    def _output(self):
-        return str(self)
-
     # Conversions
 
     _tonumber = GoghNumber.__tonumber
@@ -180,3 +205,9 @@ class GoghString(GoghArray):
         else:
             retval = str(self) + "".join(str(i) for i in value)
         return GoghString(retval)
+
+    def __sub__(self, value):
+        if value._is((GoghNumber, GoghString)):
+            return GoghString(str(self).replace(str(value), ""))
+        else:
+            return GoghArray([self-elem for elem in list(value)])
