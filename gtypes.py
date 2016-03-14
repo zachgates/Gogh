@@ -220,7 +220,7 @@ class GoghArray(list, GoghObject):
             list.__init__(self, value)
 
     def __str__(self):
-        return ",".join(str(i) for i in self)
+        return "".join(str(i) for i in self)
 
     def __repr__(self):
         elems = " ".join(repr(i) for i in self)
@@ -237,6 +237,9 @@ class GoghArray(list, GoghObject):
     # Conversions
 
     _tonumber = GoghNumber.__tonumber
+
+    def _tostring(self):
+        return ",".join(str(i) for i in self)
 
     # Arithmetic Operations
 
