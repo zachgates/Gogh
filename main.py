@@ -14,24 +14,30 @@ class Gogh(Director, Stack):
     _dreq = "_noop"
     _req2func = {
         0  : "_output",
+        42 : "_multiply",
         43 : "_add",
         45 : "_subtract",
+        47 : "_divide",
         97 : "_toarray",
         110: "_tonumber",
         115: "_tostring",
     }
     _req2arities = {
         0  : 1,
+        42 : 2,
         43 : 2,
         45 : 2,
+        47 : 2,
         97 : 1,
         110: 1,
         115: 1,
     }
     _req2argtype = {
         0  : [GoghObject],
+        42 : [GoghObject, GoghObject],
         43 : [GoghObject, GoghObject],
         45 : [GoghObject, GoghObject],
+        47 : [GoghObject, GoghObject],
         97 : [GoghObject],
         110: [GoghObject],
         115: [GoghObject],
@@ -39,8 +45,10 @@ class Gogh(Director, Stack):
     _req2default = {}
     _req2stack = {
         0  : 1,
+        42 : 2,
         43 : 2,
         45 : 2,
+        47 : 2,
         97 : 1,
         110: 1,
         115: 1,
@@ -102,8 +110,16 @@ class Gogh(Director, Stack):
 
     @Planner.toapprove
     def _add(self, a, b):
-        self._push(a.__add__(b))
+        self._push(a + b)
 
     @Planner.toapprove
     def _subtract(self, a, b):
-        self._push(a.__sub__(b))
+        self._push(a - b)
+
+    @Planner.toapprove
+    def _multiply(self, a, b):
+        self._push(a * b)
+
+    @Planner.toapprove
+    def _divide(self, a, b):
+        self._push(a / b)

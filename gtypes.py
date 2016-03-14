@@ -46,9 +46,6 @@ class GoghObject(object):
         """To be written in the superclass."""
         return NotImplemented
 
-    def __floordiv__(self, value):
-        return self.__truediv__(value) // 1
-
 
 # Numbers (Integers & Decimals)
 
@@ -67,7 +64,7 @@ class GoghNumber(GoghObject):
         elif value.isnumeric():
             return GoghInteger(value)
         else:
-            return GoghInteger(len(value))
+            return GoghInteger(sum(ord(c) for c in value))
 
     def _GoghArray__tonumber(value):
         return GoghInteger(len(value))
@@ -75,14 +72,6 @@ class GoghNumber(GoghObject):
     # Arithmetic Operations
 
     def __add__(self, value):
-        if self._is(GoghInteger):
-            if value._is(GoghInteger):
-                return GoghInteger(int(self) + int(value))
-            elif value._is(GoghDecimal):
-                return GoghDecimal(float(self) + float(value))
-        else:
-            if value._is(GoghNumber):
-                return GoghDecimal(float(self) + float(value))
         if value._is(GoghString):
             value = str(value)
             if value.isnumeric():
@@ -96,14 +85,6 @@ class GoghNumber(GoghObject):
             return GoghArray([self] + list(value))
 
     def __sub__(self, value):
-        if self._is(GoghInteger):
-            if value._is(GoghInteger):
-                return GoghInteger(int(self) - int(value))
-            elif value._is(GoghDecimal):
-                return GoghDecimal(float(self) - float(value))
-        else:
-            if value._is(GoghNumber):
-                return GoghDecimal(float(self) - float(value))
         if value._is(GoghString):
             value = str(value)
             if value.isnumeric():
@@ -116,9 +97,66 @@ class GoghNumber(GoghObject):
         else:
             return GoghArray([self-elem for elem in list(value)])
 
+    def __mul__(self, value):
+        if value._is(GoghString):
+            value = str(value)
+            if value.isnumeric():
+                return type(self)(float(self) * int(value))
+            elif re.match("(\d+)?\.(\d+)?", value):
+                value = 0 if value == "." else value
+                return type(self)(float(self) * float(value))
+            else:
+                return GoghString(value * int(self))
+        else:
+            return GoghArray([self for _ in list(value)])
+
+    def __truediv__(self, value):
+        if value._is(GoghNumber):
+            retval = float(self) / float(value)
+            if retval % 1:
+                return GoghDecimal(retval)
+            else:
+                return GoghInteger(retval)
+        elif value._is(GoghString):
+            value = str(value)
+            if value.isnumeric():
+                return type(self)(float(self) / int(value))
+            elif re.match("(\d+)?\.(\d+)?", value):
+                value = 0 if value == "." else value
+                return type(self)(float(self) / float(value))
+            else:
+                return None
+        else:
+            return None
+
 
 class GoghInteger(GoghNumber, int):
-    pass
+
+    # Arithmetic Operations
+
+    def __add__(self, value):
+        if value._is(GoghInteger):
+            return GoghInteger(int(self) + int(value))
+        elif value._is(GoghDecimal):
+            return GoghDecimal(float(self) + float(value))
+        else:
+            return GoghNumber.__add__(self, value)
+
+    def __sub__(self, value):
+        if value._is(GoghInteger):
+            return GoghInteger(int(self) - int(value))
+        elif value._is(GoghDecimal):
+            return GoghDecimal(float(self) - float(value))
+        else:
+            return GoghNumber.__sub__(self, value)
+
+    def __mul__(self, value):
+        if value._is(GoghInteger):
+            return GoghInteger(int(self) * int(value))
+        elif value._is(GoghDecimal):
+            return GoghDecimal(float(self) * float(value))
+        else:
+            return GoghNumber.__mul__(self, value)
 
 
 class GoghDecimal(GoghNumber, float):
@@ -130,6 +168,26 @@ class GoghDecimal(GoghNumber, float):
             return float.__new__(cls, 0)
         else:
             return float.__new__(cls, value)
+
+    # Arithmetic Operations
+
+    def __add__(self, value):
+        if value._is(GoghNumber):
+            return GoghDecimal(float(self) + float(value))
+        else:
+            return GoghNumber.__add__(self, value)
+
+    def __sub__(self, value):
+        if value._is(GoghNumber):
+            return GoghDecimal(float(self) - float(value))
+        else:
+            return GoghNumber.__sub__(self, value)
+
+    def __mul__(self, value):
+        if value._is(GoghNumber):
+            return GoghDecimal(float(self) * float(value))
+        else:
+            return GoghNumber.__mul__(self, value)
 
 
 # Lists
@@ -157,6 +215,14 @@ class GoghArray(list, GoghObject):
         elems = " ".join(repr(i) for i in self)
         return "[%s]" % elems
 
+    def _splice(self, start, stop):
+        opn = self[:start]
+        cls = self[stop:]
+        mid = self[start:stop]
+        list.clear(self)
+        list.extend(self, opn + cls)
+        return mid
+
     # Conversions
 
     _tonumber = GoghNumber.__tonumber
@@ -175,6 +241,24 @@ class GoghArray(list, GoghObject):
             return GoghArray([elem for elem in list(self) if elem != value])
         else:
             return GoghArray([elem for elem in list(self) if elem not in value])
+
+    def __mul__(self, value):
+        if value._is(GoghNumber):
+            return GoghArray([GoghArray(self) for _ in range(int(value))])
+        elif value._is(GoghString):
+            return GoghArray([elem*value for elem in self])
+        else:
+            return GoghArray([GoghArray(elem) for elem in zip(self, value)])
+
+    def __truediv__(self, value):
+        if value._is(GoghInteger):
+            sp = lambda: self._splice(0, value)
+            chunks = [sp() for _ in range(len(self) // int(value) + 1)]
+            return GoghArray(filter(None, chunks))
+        elif value._is((GoghDecimal, GoghString)):
+            return GoghInteger(list.count(self, value))
+        else:
+            return GoghArray([GoghInteger(list.count(self, v)) for v in value])
 
 
 # Strings
@@ -211,3 +295,21 @@ class GoghString(GoghArray):
             return GoghString(str(self).replace(str(value), ""))
         else:
             return GoghArray([self-elem for elem in list(value)])
+
+    def __mul__(self, value):
+        if value._is(GoghNumber):
+            return GoghString(str(self) * int(value))
+        elif value._is(GoghString):
+            return GoghInteger(sum(map(ord, self)) + sum(map(ord, value)))
+        else:
+            return GoghArray([GoghString(self) for _ in value])
+
+    def __truediv__(self, value):
+        if value._is(GoghInteger):
+            sp = lambda: self._splice(0, value)
+            chunks = [sp() for _ in range(len(self) // int(value) + 1)]
+            return GoghArray([GoghString(e) for e in filter(None, chunks)])
+        elif value._is(GoghString):
+            return GoghInteger(str(self).count(str(value)))
+        else:
+            return None

@@ -24,9 +24,9 @@ class Stack(list, Planner):
         251: 1,
     }
     _req2argtype = {
-        6  : [int],
-        250: [int],
-        251: [int],
+        6  : [GoghInteger],
+        250: [GoghInteger],
+        251: [GoghInteger],
     }
     _req2default = {
         6  : [0],
@@ -47,7 +47,7 @@ class Stack(list, Planner):
         return "[%s]" % elems
 
     def _push(self, *args):
-        for elem in args:
+        for elem in filter(None, args):
             if isinstance(elem, (str, GoghString)):
                 val = GoghString(elem)
             elif isinstance(elem, (list, tuple, GoghArray)):
