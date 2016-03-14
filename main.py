@@ -84,13 +84,13 @@ class Gogh(Director, Stack):
                     elif self.intreg:
                         self._push(GoghInteger(self.intreg))
                     self._empintreg()
-                if reqcode == 39:
-                    self.strlit = True
+                if reqcode in [34, 39]:
+                    self.strlit = reqcode
                 else:
                     self.cchar = char
                     self._request(reqcode)
             else:
-                if reqcode == 39:
+                if reqcode == self.strlit:
                     self._push(GoghString(self.strreg))
                     self._empstrreg()
                 else:
