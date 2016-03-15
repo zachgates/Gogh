@@ -29,7 +29,7 @@ class GoghObject(object):
 
     def _tonumber(self):
         """To be written in the superclass."""
-        return NotImplemented
+        return None
 
     def _tostring(self):
         return GoghString(self)
@@ -38,19 +38,23 @@ class GoghObject(object):
 
     def __add__(self, value):
         """To be written in the superclass."""
-        return NotImplemented
+        return None
 
     def __sub__(self, value):
         """To be written in the superclass."""
-        return NotImplemented
+        return None
 
     def __mul__(self, value):
         """To be written in the superclass."""
-        return NotImplemented
+        return None
 
     def __truediv__(self, value):
         """To be written in the superclass."""
-        return NotImplemented
+        return None
+
+    def __neg__(self):
+        """To be written in the superclass."""
+        return None
 
 
 # Numbers (Integers & Decimals)
@@ -179,6 +183,9 @@ class GoghInteger(GoghNumber, int):
         else:
             return GoghNumber.__mul__(self, value)
 
+    def __neg__(self):
+        return int.__neg__(self)
+
 
 class GoghDecimal(GoghNumber, float):
 
@@ -218,6 +225,9 @@ class GoghDecimal(GoghNumber, float):
             return GoghDecimal(round(float(self) * float(value), prec))
         else:
             return GoghNumber.__mul__(self, value)
+
+    def __neg__(self):
+        return float.__neg__(self)
 
 
 # Lists
@@ -296,6 +306,10 @@ class GoghArray(list, GoghObject):
             return GoghInteger(list.count(self, value))
         else:
             return GoghArray([GoghInteger(list.count(self, v)) for v in value])
+
+    def __neg__(self):
+        list.reverse(self)
+        return self
 
 
 # Strings
@@ -417,9 +431,6 @@ class GoghBlock(list, GoghObject):
             list.__iadd__(self, value)
         return self
 
-    def __sub__(self, value):
-        return None
-
     def __mul__(self, value):
         if value._is(GoghInteger):
             list.__imul__(self, value)
@@ -427,5 +438,5 @@ class GoghBlock(list, GoghObject):
         else:
             return None
 
-    def __truediv__(self, value):
+    def __neg__(self):
         return None

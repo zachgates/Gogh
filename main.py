@@ -21,6 +21,7 @@ class Gogh(Director, Stack):
         43 : "_add",
         45 : "_subtract",
         47 : "_divide",
+        94 : "_negate",
         97 : "_toarray",
         110: "_tonumber",
         115: "_tostring",
@@ -31,6 +32,7 @@ class Gogh(Director, Stack):
         43 : 2,
         45 : 2,
         47 : 2,
+        94 : 1,
         97 : 1,
         110: 1,
         115: 1,
@@ -41,21 +43,12 @@ class Gogh(Director, Stack):
         43 : [GoghObject, GoghObject],
         45 : [GoghObject, GoghObject],
         47 : [GoghObject, GoghObject],
+        94 : [GoghObject],
         97 : [GoghObject],
         110: [GoghObject],
         115: [GoghObject],
     }
     _req2default = {}
-    _req2stack = {
-        0  : 1,
-        42 : 2,
-        43 : 2,
-        45 : 2,
-        47 : 2,
-        97 : 1,
-        110: 1,
-        115: 1,
-    }
 
     _req2func.update(Stack._req2func)
     _req2arities.update(Stack._req2arities)
@@ -95,7 +88,7 @@ class Gogh(Director, Stack):
     def _request(self, action):
         areq = self._req2func.get(action, self._dreq)
         if not getattr(super(), areq, False):
-            rlen = self._req2stack.get(action, 0)
+            rlen = self._req2arities.get(action, 0)
             if not self._islength(rlen):
                 self.broadcast(3, rlen)
         Planner.request(self, action)
@@ -125,17 +118,21 @@ class Gogh(Director, Stack):
         self._push(tos._tostring())
 
     @Planner.toapprove
-    def _add(self, a, b):
-        self._push(a + b)
+    def _add(self, stos, tos):
+        self._push(stos + tos)
 
     @Planner.toapprove
-    def _subtract(self, a, b):
-        self._push(a - b)
+    def _subtract(self, stos, tos):
+        self._push(stos - tos)
 
     @Planner.toapprove
-    def _multiply(self, a, b):
-        self._push(a * b)
+    def _multiply(self, stos, tos):
+        self._push(stos * tos)
 
     @Planner.toapprove
-    def _divide(self, a, b):
-        self._push(a / b)
+    def _divide(self, stos, tos):
+        self._push(stos / tos)
+
+    @Planner.toapprove
+    def _negate(self, tos):
+        self._push(-tos)
