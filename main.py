@@ -1,6 +1,9 @@
+import re
 from stack import Stack
 from control import Director, Planner
-from gtypes import GoghObject, GoghString, GoghInteger, GoghDecimal, GoghArray
+from gtypes import GoghObject
+from gtypes import GoghString, GoghInteger, GoghDecimal, GoghArray
+from gtypes import GoghBlock
 
 
 code_page  = """¡¢£¤¥¦©¬®µ½¿€ÆÇÐÑ×ØŒÞßæçðıȷñ÷øœþ !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~¶"""
@@ -73,28 +76,20 @@ class Gogh(Director, Stack):
         self.frames = self._tokenize(code)
 
     def _tokenize(self, code):
-        for char in code:
-            reqcode = code_page.index(char) if char != "\n" else 32
-            if not self.strlit:
-                if (reqcode == 46) or (reqcode in range(48, 58)):
-                    self._setintreg(char)
-                else:
-                    if self.intreg and ("." in self.intreg):
-                        self._push(GoghDecimal(self.intreg))
-                    elif self.intreg:
-                        self._push(GoghInteger(self.intreg))
-                    self._empintreg()
-                if reqcode in [34, 39]:
-                    self.strlit = reqcode
-                else:
-                    self.cchar = char
-                    self._request(reqcode)
+        blocks = re.findall('"[^"]+"|[0-9.]+|{[^}]+}|.', code)
+        for elem in blocks:
+            if elem.startswith('"') or elem.isnumeric():
+                self._push(eval(elem))
+            elif re.match("(\d+)?\.([\d.]+)?", elem):
+                elem = elem.split(".", 1)
+                elem[1] = elem[1].replace(".", "0")
+                self._push(GoghDecimal(".".join(elem)))
+            elif elem.startswith("{"):
+                self._push(GoghBlock(elem[1:-1]))
             else:
-                if reqcode == self.strlit:
-                    self._push(GoghString(self.strreg))
-                    self._empstrreg()
-                else:
-                    self._setstrreg(char)
+                reqcode = code_page.index(elem) if elem != "\n" else 32
+                self.cchar = elem
+                self._request(reqcode)
         self._exit(0)
 
     def _request(self, action):
@@ -109,30 +104,6 @@ class Gogh(Director, Stack):
         if self._islength(1):
             Director._update(self, self._TOS)
         self.broadcast(code)
-
-    # Integer Literals
-
-    def _setintreg(self, char):
-        if self.intreg != None:
-            char = "0" if (char in self.intreg) and (char == ".") else char
-            self.intreg += char
-        else:
-            self.intreg = char
-
-    def _empintreg(self):
-        self.intreg = None
-
-    # String Literals
-
-    def _setstrreg(self, char):
-        if self.strreg != None:
-            self.strreg += char
-        else:
-            self.strreg = char
-
-    def _empstrreg(self):
-        self.strlit = False
-        self.strreg = None
 
     # Manipulators
 

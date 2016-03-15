@@ -71,6 +71,9 @@ class GoghNumber(GoghObject):
     def _GoghArray__tonumber(value):
         return GoghInteger(len(value))
 
+    def _GoghBlock__tonumber(value):
+        return GoghInteger(len(value))
+
     # Arithmetic Operations
 
     def __add__(self, value):
@@ -84,8 +87,10 @@ class GoghNumber(GoghObject):
                 return type(self)(round(float(self) + float(value), prec))
             else:
                 return GoghString(str(self) + value)
-        else:
+        elif value._is(GoghArray):
             return GoghArray([self] + list(value))
+        else:
+            return None
 
     def __sub__(self, value):
         if value._is(GoghString):
@@ -98,8 +103,10 @@ class GoghNumber(GoghObject):
                 return type(self)(round(float(self) - float(value), prec))
             else:
                 return GoghString(str(self).replace(value))
-        else:
+        elif value._is(GoghArray):
             return GoghArray([self-elem for elem in list(value)])
+        else:
+            return None
 
     def __mul__(self, value):
         if value._is(GoghString):
@@ -112,8 +119,10 @@ class GoghNumber(GoghObject):
                 return type(self)(round(float(self) * float(value), prec))
             else:
                 return GoghString(value * int(self))
-        else:
+        elif value._is(GoghArray):
             return GoghArray([self for _ in list(value)])
+        else:
+            return None
 
     def __truediv__(self, value):
         if value._is(GoghNumber):
@@ -222,6 +231,8 @@ class GoghArray(list, GoghObject):
             list.__init__(self)
         elif isinstance(value, GoghString):
             list.__init__(self, [GoghString(elem) for elem in str(value)])
+        elif isinstance(value, GoghBlock):
+            list.__init__(self, GoghBlock)
         else:
             list.__init__(self, value)
 
@@ -245,19 +256,19 @@ class GoghArray(list, GoghObject):
     _tonumber = GoghNumber.__tonumber
 
     def _tostring(self):
-        return ",".join(str(i) for i in self)
+        return GoghString(",".join(str(i) for i in self))
 
     # Arithmetic Operations
 
     def __add__(self, value):
-        if value._is((GoghNumber, GoghString)):
+        if value._is((GoghNumber, GoghString, GoghBlock)):
             list.append(self, value)
             return self
         else:
             return GoghArray(list(self) + list(value))
 
     def __sub__(self, value):
-        if value._is((GoghNumber, GoghString)):
+        if value._is((GoghNumber, GoghString, GoghBlock)):
             return GoghArray([elem for elem in list(self) if elem != value])
         else:
             return GoghArray([elem for elem in list(self) if elem not in value])
@@ -267,15 +278,17 @@ class GoghArray(list, GoghObject):
             return GoghArray([GoghArray(self) for _ in range(int(value))])
         elif value._is(GoghString):
             return GoghArray([elem*value for elem in self])
-        else:
+        elif value._is(GoghArray):
             return GoghArray([GoghArray(elem) for elem in zip(self, value)])
+        else:
+            return GoghArray([value for elem in self])
 
     def __truediv__(self, value):
         if value._is(GoghInteger):
             sp = lambda: self._splice(0, value)
             chunks = [sp() for _ in range(len(self) // int(value) + 1)]
             return GoghArray(filter(None, chunks))
-        elif value._is((GoghDecimal, GoghString)):
+        elif value._is((GoghDecimal, GoghString, GoghBlock)):
             return GoghInteger(list.count(self, value))
         else:
             return GoghArray([GoghInteger(list.count(self, v)) for v in value])
@@ -306,28 +319,31 @@ class GoghString(GoghArray):
 
     _tonumber = GoghNumber.__tonumber
 
+    def _tostring(self):
+        return GoghString(str(self))
+
     # Arithmetic Operations
 
     def __add__(self, value):
-        if value._is((GoghNumber, GoghString)):
-            retval = str(self) + str(value)
-        else:
-            retval = str(self) + "".join(str(i) for i in value)
-        return GoghString(retval)
+        return GoghString(str(self) + str(value))
 
     def __sub__(self, value):
         if value._is((GoghNumber, GoghString)):
-            return GoghString(str(self).replace(str(value), ""))
-        else:
+            return GoghString(str.replace(self, str(value), ""))
+        elif value._is(GoghArray):
             return GoghArray([self-elem for elem in list(value)])
+        else:
+            return GoghString(self - value._tostring())
 
     def __mul__(self, value):
         if value._is(GoghNumber):
             return GoghString(str(self) * int(value))
         elif value._is(GoghString):
             return GoghInteger(sum(map(ord, self)) + sum(map(ord, value)))
-        else:
+        elif value._is(GoghArray):
             return GoghArray([GoghString(self) for _ in value])
+        else:
+            return None
 
     def __truediv__(self, value):
         if value._is(GoghInteger):
@@ -335,6 +351,55 @@ class GoghString(GoghArray):
             chunks = [sp() for _ in range(len(self) // int(value) + 1)]
             return GoghArray([GoghString(e) for e in filter(None, chunks)])
         elif value._is(GoghString):
-            return GoghInteger(str(self).count(str(value)))
+            return GoghInteger(str.count(self, str(value)))
         else:
             return None
+
+
+# Code Blocks
+
+
+class Frame(int):
+    pass
+
+
+class GoghBlock(list):
+
+    # Controllers
+
+    def __init__(self, code):
+        list.__init__(self, self._tokenize(code))
+
+    def __str__(self):
+        return "".join(str(i) for i in self)
+
+    def __repr__(self):
+        return "{%s}" % str(self)
+
+    def _tokenize(self, code):
+        blocks = re.findall('"[^"]+"|[0-9.]+|{[^}]+}|.', code)
+        for elem in blocks:
+            if elem.startswith('"'):
+                yield GoghString(eval(elem))
+            elif elem.isnumeric():
+                yield GoghInteger(eval(elem))
+            elif re.match("(\d+)?\.([\d.]+)?", elem):
+                elem = elem.split(".", 1)
+                elem[1] = elem[1].replace(".", "0")
+                yield GoghDecimal(".".join(elem))
+            elif elem.startswith("{"):
+                yield GoghBlock(elem[1:-1])
+            else:
+                yield Frame(code_page.index(elem) if elem != "\n" else 32)
+
+    # Output
+
+    def _output(self):
+        return str(self)
+
+    # Conversions
+
+    _tonumber = GoghNumber.__tonumber
+
+    def _tostring(self):
+        return GoghString("".join(str(i) for i in self))

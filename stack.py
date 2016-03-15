@@ -1,5 +1,6 @@
 from control import Planner
 from gtypes import GoghString, GoghInteger, GoghDecimal, GoghArray
+from gtypes import GoghBlock
 
 
 class Stack(list, Planner):
@@ -48,7 +49,9 @@ class Stack(list, Planner):
 
     def _push(self, *args):
         for elem in filter(lambda i: i != None, args):
-            if isinstance(elem, (str, GoghString)):
+            if isinstance(elem, GoghBlock):
+                val = elem
+            elif isinstance(elem, (str, GoghString)):
                 val = GoghString(elem)
             elif isinstance(elem, (list, tuple, GoghArray)):
                 val = GoghArray(elem)
