@@ -1,6 +1,10 @@
 import re
 
 
+code_page  = """¡¢£¤¥¦©¬®µ½¿€ÆÇÐÑ×ØŒÞßæçðıȷñ÷øœþ !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~¶"""
+code_page += """°¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ƁƇƊƑƓƘⱮƝƤƬƲȤɓƈɗƒɠɦƙɱɲƥʠɼʂƭʋȥẠḄḌẸḤỊḲḶṂṆỌṚṢṬỤṾẈỴẒȦḂĊḊĖḞĠḢİĿṀṄȮṖṘṠṪẆẊẎŻạḅḍẹḥịḳḷṃṇọṛṣṭụṿẉỵẓȧḃċḋėḟġḣŀṁṅȯṗṙṡṫẇẋẏż«»‘’“”"""
+
+
 # Base class
 
 
@@ -360,10 +364,15 @@ class GoghString(GoghArray):
 
 
 class Frame(int):
-    pass
+
+    def __str__(self):
+        return code_page[self]
+
+    def __repr__(self):
+        return code_page[self]
 
 
-class GoghBlock(list):
+class GoghBlock(list, GoghObject):
 
     # Controllers
 
@@ -374,7 +383,7 @@ class GoghBlock(list):
         return "".join(str(i) for i in self)
 
     def __repr__(self):
-        return "{%s}" % str(self)
+        return "{%s}" % "".join(repr(elem) for elem in self)
 
     def _tokenize(self, code):
         blocks = re.findall('"[^"]+"|[0-9.]+|{[^}]+}|.', code)
@@ -392,14 +401,31 @@ class GoghBlock(list):
             else:
                 yield Frame(code_page.index(elem) if elem != "\n" else 32)
 
-    # Output
-
-    def _output(self):
-        return str(self)
-
     # Conversions
 
     _tonumber = GoghNumber.__tonumber
 
     def _tostring(self):
-        return GoghString("".join(str(i) for i in self))
+        return GoghString(str(self))
+
+    # Arithmetic Operations
+
+    def __add__(self, value):
+        if value._is((GoghNumber, GoghString, GoghArray)):
+            list.append(self, value)
+        else:
+            list.__iadd__(self, value)
+        return self
+
+    def __sub__(self, value):
+        return None
+
+    def __mul__(self, value):
+        if value._is(GoghInteger):
+            list.__imul__(self, value)
+            return self
+        else:
+            return None
+
+    def __truediv__(self, value):
+        return None
