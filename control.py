@@ -20,11 +20,14 @@ class Planner(object):
         func = eval("self." + self._creq)
         args = self._pull(self._req2arities.get(action, 0), True)[::-1]
         argtypes = self._req2argtype.get(action, [])
-        if all(isinstance(k, v) for k, v in zip(args, argtypes)):
-            func(*args)
-        else:
-            self._push(*args)
-            func(*self._req2default.get(action, []))
+        defaults = self._req2default.get(action, [])
+        for i, (k, v) in enumerate(zip(args, argtypes)):
+            if not isinstance(k, v):
+                if defaults:
+                    args[i] = defaults[i]
+                else:
+                    return self
+        func(*args)
         return self
 
     def chain(self, actions):
