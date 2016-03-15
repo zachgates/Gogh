@@ -299,7 +299,7 @@ class GoghArray(list, GoghObject):
             return GoghArray([elem for elem in list(self) if elem not in value])
 
     def __mul__(self, value):
-        if value._is(GoghNumber):
+        if value._is(GoghNumber) and value >= 1:
             return GoghArray([GoghArray(self) for _ in range(int(value))])
         elif value._is(GoghString):
             return GoghArray([elem*value for elem in self])
@@ -309,7 +309,7 @@ class GoghArray(list, GoghObject):
             return GoghArray([value for elem in self])
 
     def __truediv__(self, value):
-        if value._is(GoghInteger):
+        if value._is(GoghInteger) and value >= 1:
             sp = lambda: self._splice(0, value)
             chunks = [sp() for _ in range(len(self) // int(value) + 1)]
             return GoghArray(filter(None, chunks))
@@ -323,7 +323,9 @@ class GoghArray(list, GoghObject):
         return self
 
     def __pow__(self, value):
-        return GoghArray(sum(zip(*[self]*value), ()))
+        if value >= 2:
+            return GoghArray(sum(zip(*[self]*value), ()))
+        return self
 
 
 # Strings
@@ -368,8 +370,8 @@ class GoghString(GoghArray):
             return GoghString(self - value._tostring())
 
     def __mul__(self, value):
-        if value._is(GoghNumber):
-            return GoghString(str(self) * int(value))
+        if value._is(GoghNumber) and value >= 1:
+                return GoghString(str(self) * int(value))
         elif value._is(GoghString):
             x, y = list(self), list(value)
             x, y = min(x, y), max(x, y)
@@ -379,11 +381,10 @@ class GoghString(GoghArray):
             return GoghArray([GoghInteger(e) for e in leave])
         elif value._is(GoghArray):
             return GoghArray([GoghString(self) for _ in value])
-        else:
-            return self
+        return self
 
     def __truediv__(self, value):
-        if value._is(GoghInteger):
+        if value._is(GoghInteger) and value >= 1:
             sp = lambda: self._splice(0, value)
             chunks = [sp() for _ in range(len(self) // int(value) + 1)]
             return GoghArray([GoghString(e) for e in filter(None, chunks)])
@@ -393,7 +394,10 @@ class GoghString(GoghArray):
             return self
 
     def __pow__(self, value):
-        return GoghArray(map(lambda i: ord(i) ** value, self))
+        if value >= 1:
+            return GoghArray(map(lambda i: ord(i) ** value, self))
+        else:
+            return self
 
 
 # Code Blocks
@@ -454,7 +458,7 @@ class GoghBlock(list, GoghObject):
         return self
 
     def __mul__(self, value):
-        if value._is(GoghInteger):
+        if value._is(GoghInteger) and value >= 1:
             list.__imul__(self, value)
         return self
 
