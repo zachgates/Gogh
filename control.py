@@ -90,7 +90,7 @@ class Director(object):
 
     def _cleanexit(self):
         if not isinstance(self.out, bool):
-            sys.stdout.write(self.out)
+            sys.stdout.write(self.out._output())
         self._cleanup()
 
     def _clierror(self):

@@ -1,7 +1,7 @@
 import re
 from stack import Stack
 from control import Director, Planner
-from gtypes import GoghObject
+from gtypes import GoghObject, GoghNumber
 from gtypes import GoghString, GoghInteger, GoghDecimal, GoghArray
 from gtypes import GoghBlock
 
@@ -24,6 +24,7 @@ class Gogh(Director, Stack):
         94 : "_negate",
         97 : "_toarray",
         110: "_tonumber",
+        112: "_power",
         115: "_tostring",
     }
     _req2arities = {
@@ -35,6 +36,7 @@ class Gogh(Director, Stack):
         94 : 1,
         97 : 1,
         110: 1,
+        112: 2,
         115: 1,
     }
     _req2argtype = {
@@ -46,9 +48,12 @@ class Gogh(Director, Stack):
         94 : [GoghObject],
         97 : [GoghObject],
         110: [GoghObject],
+        112: [GoghObject, GoghNumber],
         115: [GoghObject],
     }
-    _req2default = {}
+    _req2default = {
+        112: [NotImplemented, GoghInteger(2)]
+    }
 
     _req2func.update(Stack._req2func)
     _req2arities.update(Stack._req2arities)
@@ -69,9 +74,11 @@ class Gogh(Director, Stack):
         self.frames = self._tokenize(code)
 
     def _tokenize(self, code):
-        blocks = re.findall('"[^"]+"|[0-9.]+|{[^}]+}|.', code)
+        blocks = re.findall('“[^”]+”|"[^"]+"|[0-9.]+|{[^}]+}|.', code)
         for elem in blocks:
-            if elem.startswith('"') or elem.isnumeric():
+            if elem.startswith('“'):
+                pass
+            elif elem.startswith('"') or elem.isnumeric():
                 self._push(eval(elem))
             elif re.match("(\d+)?\.([\d.]+)?", elem):
                 elem = elem.split(".", 1)
@@ -89,7 +96,8 @@ class Gogh(Director, Stack):
         areq = self._req2func.get(action, self._dreq)
         if not getattr(super(), areq, False):
             rlen = self._req2arities.get(action, 0)
-            if not self._islength(rlen):
+            defs = self._req2default.get(action)
+            if (not self._islength(rlen)) and (not defs):
                 self.broadcast(3, rlen)
         Planner.request(self, action)
 
@@ -102,7 +110,7 @@ class Gogh(Director, Stack):
 
     @Planner.toapprove
     def _output(self, tos):
-        self._update(tos._output(), True)
+        self._update(tos, True)
         self.broadcast(0)
 
     @Planner.toapprove
@@ -136,3 +144,7 @@ class Gogh(Director, Stack):
     @Planner.toapprove
     def _negate(self, tos):
         self._push(-tos)
+
+    @Planner.toapprove
+    def _power(self, stos, tos):
+        self._push(stos ** tos)

@@ -1,4 +1,5 @@
 import re
+from functools import reduce
 
 
 code_page  = """¡¢£¤¥¦©¬®µ½¿€ÆÇÐÑ×ØŒÞßæçðıȷñ÷øœþ !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~¶"""
@@ -53,6 +54,10 @@ class GoghObject(object):
         return self
 
     def __neg__(self):
+        """To be written in the superclass."""
+        return self
+
+    def __pow__(self, value):
         """To be written in the superclass."""
         return self
 
@@ -186,6 +191,9 @@ class GoghInteger(GoghNumber, int):
     def __neg__(self):
         return int.__neg__(self)
 
+    def __pow__(self, value):
+        return int.__pow__(self, value)
+
 
 class GoghDecimal(GoghNumber, float):
 
@@ -228,6 +236,9 @@ class GoghDecimal(GoghNumber, float):
 
     def __neg__(self):
         return float.__neg__(self)
+
+    def __pow__(self, value):
+        return float.__pow__(self, value)
 
 
 # Lists
@@ -311,6 +322,9 @@ class GoghArray(list, GoghObject):
         list.reverse(self)
         return self
 
+    def __pow__(self, value):
+        return GoghArray(sum(zip(*[self]*value), ()))
+
 
 # Strings
 
@@ -326,7 +340,7 @@ class GoghString(GoghArray):
         return "".join(str(i) for i in self)
 
     def __repr__(self):
-        return "'%s'" % "".join(str(i) if i != "\n" else "\\n" for i in self)
+        return '"%s"' % "".join(str(i) if i != "\n" else "\\n" for i in self)
 
     # Output
 
@@ -357,7 +371,12 @@ class GoghString(GoghArray):
         if value._is(GoghNumber):
             return GoghString(str(self) * int(value))
         elif value._is(GoghString):
-            return GoghInteger(sum(map(ord, self)) + sum(map(ord, value)))
+            x, y = list(self), list(value)
+            x, y = min(x, y), max(x, y)
+            x += ["\x01"] * (len(y) - len(x))
+            inter = zip(map(ord, x), map(ord, y))
+            leave = map(lambda a: a[0] * a[1], inter)
+            return GoghArray([GoghInteger(e) for e in leave])
         elif value._is(GoghArray):
             return GoghArray([GoghString(self) for _ in value])
         else:
@@ -372,6 +391,9 @@ class GoghString(GoghArray):
             return GoghInteger(str(self).count(str(value)))
         else:
             return self
+
+    def __pow__(self, value):
+        return GoghArray(map(lambda i: ord(i) ** value, self))
 
 
 # Code Blocks
