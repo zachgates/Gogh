@@ -329,7 +329,7 @@ class GoghString(GoghArray):
 
     def __sub__(self, value):
         if value._is((GoghNumber, GoghString)):
-            return GoghString(str.replace(self, str(value), ""))
+            return GoghString(str(self).replace(str(value), ""))
         elif value._is(GoghArray):
             return GoghArray([self-elem for elem in list(value)])
         else:
@@ -351,7 +351,7 @@ class GoghString(GoghArray):
             chunks = [sp() for _ in range(len(self) // int(value) + 1)]
             return GoghArray([GoghString(e) for e in filter(None, chunks)])
         elif value._is(GoghString):
-            return GoghInteger(str.count(self, str(value)))
+            return GoghInteger(str(self).count(str(value)))
         else:
             return None
 
