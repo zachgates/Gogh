@@ -17,6 +17,7 @@ class Gogh(Director, Stack):
     _dreq = "_noop"
     _req2func = {
         0  : "_output",
+        37 : "_modulo",
         42 : "_multiply",
         43 : "_add",
         45 : "_subtract",
@@ -30,6 +31,7 @@ class Gogh(Director, Stack):
     }
     _req2arities = {
         0  : 1,
+        37 : 2,
         42 : 2,
         43 : 2,
         45 : 2,
@@ -43,6 +45,7 @@ class Gogh(Director, Stack):
     }
     _req2argtype = {
         0  : [GoghObject],
+        37 : [GoghObject, GoghObject],
         42 : [GoghObject, GoghObject],
         43 : [GoghObject, GoghObject],
         45 : [GoghObject, GoghObject],
@@ -146,6 +149,10 @@ class Gogh(Director, Stack):
         self._push(stos / tos)
 
     @Planner.toapprove
+    def _modulo(self, stos, tos):
+        self._push(stos % tos)
+
+    @Planner.toapprove
     def _negate(self, tos):
         self._push(-tos)
 
@@ -156,7 +163,7 @@ class Gogh(Director, Stack):
     @Planner.toapprove
     def _root(self, stos, tos):
         retval = stos ** (1 / tos)
-        if isinstance(retval, (int, float)) and (retval == retval // 1):
+        if isinstance(retval, (int, float)) and (retval % 1):
             self._push(GoghInteger(retval // 1))
         else:
             self._push(retval)

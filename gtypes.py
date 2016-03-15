@@ -53,6 +53,10 @@ class GoghObject(object):
         """To be written in the superclass."""
         return self
 
+    def __mod__(self, value):
+        """To be written in the superclass."""
+        return self
+
     def __neg__(self):
         """To be written in the superclass."""
         return self
@@ -140,8 +144,9 @@ class GoghNumber(GoghObject):
     def __truediv__(self, value):
         if value._is(GoghNumber):
             retval = float(self) / float(value)
+            prec = max(map(self._prec, [self, value]))
             if retval % 1:
-                return GoghDecimal(retval)
+                return GoghDecimal(round(retval, prec))
             else:
                 return GoghInteger(retval)
         elif value._is(GoghString):
@@ -153,6 +158,17 @@ class GoghNumber(GoghObject):
                 return type(self)(float(self) / float(value))
             else:
                 return self
+        else:
+            return self
+
+    def __mod__(self, value):
+        if value._is(GoghNumber):
+            retval = float(self) % float(value)
+            prec = max(map(self._prec, [self, value]))
+            if retval % 1:
+                return GoghDecimal(round(retval, prec))
+            else:
+                return GoghInteger(retval)
         else:
             return self
 
@@ -293,10 +309,14 @@ class GoghArray(list, GoghObject):
             return GoghArray(list(self) + list(value))
 
     def __sub__(self, value):
+        list.reverse(self)
         if value._is((GoghNumber, GoghString, GoghBlock)):
-            return GoghArray([elem for elem in list(self) if elem != value])
+            list.remove(self, value)
         else:
-            return GoghArray([elem for elem in list(self) if elem not in value])
+            for elem in value:
+                list.remove(self, value)
+        list.reverse(self)
+        return self
 
     def __mul__(self, value):
         if value._is(GoghNumber) and value >= 1:
@@ -317,6 +337,12 @@ class GoghArray(list, GoghObject):
             return GoghInteger(list.count(self, value))
         else:
             return GoghArray([GoghInteger(list.count(self, v)) for v in value])
+
+    def __mod__(self, value):
+        if value._is((GoghNumber, GoghString, GoghBlock)):
+            return GoghArray([elem for elem in list(self) if elem != value])
+        else:
+            return GoghArray([elem for elem in list(self) if elem not in value])
 
     def __neg__(self):
         list.reverse(self)
@@ -363,7 +389,7 @@ class GoghString(GoghArray):
 
     def __sub__(self, value):
         if value._is((GoghNumber, GoghString)):
-            return GoghString(str(self).replace(str(value), ""))
+            return GoghString(str(self).replace(str(value), "", 1))
         elif value._is(GoghArray):
             return GoghArray([self-elem for elem in list(value)])
         else:
@@ -390,6 +416,15 @@ class GoghString(GoghArray):
             return GoghArray([GoghString(e) for e in filter(None, chunks)])
         elif value._is(GoghString):
             return GoghInteger(str(self).count(str(value)))
+        else:
+            return self
+
+    def __mod__(self, value):
+        if value._is((GoghNumber, GoghString)):
+            s = str(self)[::-1]
+            return GoghString(s.replace(str(value), "")[::-1])
+        elif value._is(GoghArray):
+            return GoghArray([self%elem for elem in list(value)])
         else:
             return self
 
