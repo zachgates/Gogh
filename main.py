@@ -25,6 +25,7 @@ class Gogh(Director, Stack):
         97 : "_toarray",
         110: "_tonumber",
         112: "_power",
+        114: "_root",
         115: "_tostring",
     }
     _req2arities = {
@@ -37,6 +38,7 @@ class Gogh(Director, Stack):
         97 : 1,
         110: 1,
         112: 2,
+        114: 2,
         115: 1,
     }
     _req2argtype = {
@@ -49,10 +51,12 @@ class Gogh(Director, Stack):
         97 : [GoghObject],
         110: [GoghObject],
         112: [GoghObject, GoghNumber],
+        114: [GoghObject, GoghNumber],
         115: [GoghObject],
     }
     _req2default = {
-        112: [NotImplemented, GoghInteger(2)]
+        112: [NotImplemented, GoghInteger(2)],
+        114: [NotImplemented, GoghInteger(2)],
     }
 
     _req2func.update(Stack._req2func)
@@ -148,3 +152,11 @@ class Gogh(Director, Stack):
     @Planner.toapprove
     def _power(self, stos, tos):
         self._push(stos ** tos)
+
+    @Planner.toapprove
+    def _root(self, stos, tos):
+        retval = stos ** (1 / tos)
+        if isinstance(retval, (int, float)) and (retval == retval // 1):
+            self._push(GoghInteger(retval // 1))
+        else:
+            self._push(retval)
