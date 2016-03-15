@@ -78,10 +78,27 @@ class Gogh(Director, Stack):
         self.intreg = None
         self.strreg = None
         self.strlit = False
-        self.frames = self._tokenize(code)
+        self.frames = self._pre(code)
+        self._exit(0)
 
     def _tokenize(self, code):
         blocks = re.findall('“[^”]+”|"[^"]+"|[0-9.]+|{[^}]+}|.', code)
+        return blocks
+
+    def _pre(self, code):
+        blocks = self._tokenize(code)
+        if blocks.count("Ø"):
+            code = code.split("Ø", 1)[0]
+            try:
+                while True:
+                    self._run(code)
+            except:
+                self._exit(0)
+        else:
+            self._run(code)
+
+    def _run(self, code):
+        blocks = self._tokenize(code)
         for elem in blocks:
             if elem.startswith('“'):
                 pass
@@ -97,7 +114,6 @@ class Gogh(Director, Stack):
                 reqcode = code_page.index(elem) if elem != "\n" else 32
                 self.cchar = elem
                 self._request(reqcode)
-        self._exit(0)
 
     def _request(self, action):
         areq = self._req2func.get(action, self._dreq)
