@@ -18,9 +18,15 @@ class Planner(object):
     def request(self, action):
         self._creq = self._req2func.get(action, self._dreq)
         func = eval("self." + self._creq)
-        args = self._pull(self._req2arities.get(action, 0), True)[::-1]
+        args = self._req2arities.get(action, 0)
         argtypes = self._req2argtype.get(action, [])
         defaults = self._req2default.get(action, [])
+        if self._islength(args):
+            args = self._pull(args, True)[::-1]
+        else:
+            pos = len(self)
+            args = self._pull(pos, True)[::-1]
+            args += defaults[pos:]
         for i, (k, v) in enumerate(zip(args, argtypes)):
             if not isinstance(k, v):
                 if defaults:
