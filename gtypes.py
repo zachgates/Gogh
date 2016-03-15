@@ -29,7 +29,7 @@ class GoghObject(object):
 
     def _tonumber(self):
         """To be written in the superclass."""
-        return None
+        return self
 
     def _tostring(self):
         return GoghString(self)
@@ -38,23 +38,23 @@ class GoghObject(object):
 
     def __add__(self, value):
         """To be written in the superclass."""
-        return None
+        return self
 
     def __sub__(self, value):
         """To be written in the superclass."""
-        return None
+        return self
 
     def __mul__(self, value):
         """To be written in the superclass."""
-        return None
+        return self
 
     def __truediv__(self, value):
         """To be written in the superclass."""
-        return None
+        return self
 
     def __neg__(self):
         """To be written in the superclass."""
-        return None
+        return self
 
 
 # Numbers (Integers & Decimals)
@@ -98,7 +98,7 @@ class GoghNumber(GoghObject):
         elif value._is(GoghArray):
             return GoghArray([self] + list(value))
         else:
-            return None
+            return self
 
     def __sub__(self, value):
         if value._is(GoghString):
@@ -114,7 +114,7 @@ class GoghNumber(GoghObject):
         elif value._is(GoghArray):
             return GoghArray([self-elem for elem in list(value)])
         else:
-            return None
+            return self
 
     def __mul__(self, value):
         if value._is(GoghString):
@@ -130,7 +130,7 @@ class GoghNumber(GoghObject):
         elif value._is(GoghArray):
             return GoghArray([self for _ in list(value)])
         else:
-            return None
+            return self
 
     def __truediv__(self, value):
         if value._is(GoghNumber):
@@ -147,9 +147,9 @@ class GoghNumber(GoghObject):
                 value = 0 if value == "." else value
                 return type(self)(float(self) / float(value))
             else:
-                return None
+                return self
         else:
-            return None
+            return self
 
 
 class GoghInteger(GoghNumber, int):
@@ -361,7 +361,7 @@ class GoghString(GoghArray):
         elif value._is(GoghArray):
             return GoghArray([GoghString(self) for _ in value])
         else:
-            return None
+            return self
 
     def __truediv__(self, value):
         if value._is(GoghInteger):
@@ -371,7 +371,7 @@ class GoghString(GoghArray):
         elif value._is(GoghString):
             return GoghInteger(str(self).count(str(value)))
         else:
-            return None
+            return self
 
 
 # Code Blocks
@@ -434,9 +434,8 @@ class GoghBlock(list, GoghObject):
     def __mul__(self, value):
         if value._is(GoghInteger):
             list.__imul__(self, value)
-            return self
-        else:
-            return None
+        return self
 
     def __neg__(self):
-        return None
+        list.append(self, Frame(94))
+        return self
