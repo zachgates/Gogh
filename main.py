@@ -3,7 +3,7 @@ from stack import Stack
 from control import Director, Planner
 from gtypes import GoghObject, GoghNumber
 from gtypes import GoghString, GoghInteger, GoghDecimal, GoghArray
-from gtypes import GoghBlock
+from gtypes import GoghBlock, Frame
 
 
 code_page  = """¡¢£¤¥¦©¬®µ½¿€ÆÇÐÑ×ØŒÞßæçðıȷñ÷øœþ !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~¶"""
@@ -31,6 +31,7 @@ class Gogh(Director, Stack):
         112: "_power",
         114: "_root",
         115: "_tostring",
+        120: "_execute_instack",
     }
     _req2arities = {
         0  : 1,
@@ -48,6 +49,7 @@ class Gogh(Director, Stack):
         112: 2,
         114: 2,
         115: 1,
+        120: 1,
     }
     _req2argtype = {
         0  : [GoghObject],
@@ -65,6 +67,7 @@ class Gogh(Director, Stack):
         112: [GoghObject, GoghNumber],
         114: [GoghObject, GoghNumber],
         115: [GoghObject],
+        120: [GoghBlock],
     }
     _req2default = {
         112: [NotImplemented, GoghInteger(2)],
@@ -207,3 +210,11 @@ class Gogh(Director, Stack):
     @Planner.toapprove
     def _lognot(self, tos):
         self._push(not bool(tos))
+
+    @Planner.toapprove
+    def _execute_instack(self, tos):
+        for block in tos:
+            if isinstance(block, Frame):
+                self._request(block)
+            else:
+                self._push(block)
