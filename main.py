@@ -27,6 +27,7 @@ class Gogh(Director, Stack):
         58 : "_if_execute",
         63 : "_keepif_construct",
         64 : "_ifelse_execute",
+        82 : "_reverse_top",
         94 : "_negate",
         97 : "_toarray",
         110: "_tonumber",
@@ -47,6 +48,7 @@ class Gogh(Director, Stack):
         58 : 2,
         63 : 2,
         64 : 3,
+        82 : 1,
         94 : 1,
         97 : 1,
         110: 1,
@@ -68,6 +70,7 @@ class Gogh(Director, Stack):
         58 : [GoghBlock, GoghObject],
         63 : [GoghObject, GoghObject],
         64 : [GoghBlock, GoghBlock, GoghObject],
+        82 : [GoghObject],
         94 : [GoghObject],
         97 : [GoghObject],
         110: [GoghObject],
@@ -246,3 +249,13 @@ class Gogh(Director, Stack):
             torun = stos
         code = "".join(repr(e) for e in torun)
         self._pre(code)
+
+    # Array Operations
+
+    @Planner.toapprove
+    def _reverse_top(self, tos):
+        if tos._is(GoghNumber):
+            tos = -tos
+        elif tos._is(GoghArray):
+            tos.reverse()
+        self._push(tos)
