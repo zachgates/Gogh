@@ -16,6 +16,7 @@ class Stack(list, Planner):
         17 : "_discard",
         28 : "_duplicate",
         32 : "_noop",
+        36 : "_reverse",
         250: "_ltrans",
         251: "_rtrans",
     }
@@ -82,6 +83,10 @@ class Stack(list, Planner):
     @Planner.toapprove
     def _noop(self):
         pass
+
+    @Planner.toapprove
+    def _reverse(self):
+        list.reverse(self)
 
     @Planner.toapprove
     def _empty(self):
