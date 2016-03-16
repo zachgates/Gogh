@@ -29,7 +29,7 @@ class GoghObject(object):
         return GoghArray(self)
 
     def _tonumber(self):
-        """To be written in the superclass."""
+        """To be written in the subclass."""
         return self
 
     def _tostring(self):
@@ -38,31 +38,31 @@ class GoghObject(object):
     # Arithmetic Operations
 
     def __add__(self, value):
-        """To be written in the superclass."""
+        """To be written in the subclass."""
         return self
 
     def __sub__(self, value):
-        """To be written in the superclass."""
+        """To be written in the subclass."""
         return self
 
     def __mul__(self, value):
-        """To be written in the superclass."""
+        """To be written in the subclass."""
         return self
 
     def __truediv__(self, value):
-        """To be written in the superclass."""
+        """To be written in the subclass."""
         return self
 
     def __mod__(self, value):
-        """To be written in the superclass."""
+        """To be written in the subclass."""
         return self
 
     def __neg__(self):
-        """To be written in the superclass."""
+        """To be written in the subclass."""
         return self
 
     def __pow__(self, value):
-        """To be written in the superclass."""
+        """To be written in the subclass."""
         return self
 
     def __gt__(self, value):
