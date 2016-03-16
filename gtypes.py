@@ -463,7 +463,7 @@ class GoghBlock(list, GoghObject):
     def _tokenize(self, code):
         blocks = re.findall('"[^"]+"|[0-9.]+|{[^}]+}|.', code)
         for elem in blocks:
-            if elem.startswith('"'):
+            if code_page.find(elem[0]) == 34:
                 yield GoghString(eval(elem))
             elif elem.isnumeric():
                 yield GoghInteger(eval(elem))
@@ -471,7 +471,7 @@ class GoghBlock(list, GoghObject):
                 elem = elem.split(".", 1)
                 elem[1] = elem[1].replace(".", "0")
                 yield GoghDecimal(".".join(elem))
-            elif elem.startswith("{"):
+            elif code_page.find(elem[0]) == 123:
                 yield GoghBlock(elem[1:-1])
             else:
                 yield Frame(code_page.index(elem) if elem != "\n" else 32)

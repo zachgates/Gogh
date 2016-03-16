@@ -82,10 +82,11 @@ class Gogh(Director, Stack):
         self._exit(0)
 
     def _tokenize(self, code):
-        blocks = re.findall('“[^”]+”|"[^"]+"|[0-9.]+|{[^}]+}|.', code)
+        blocks = re.findall('"[^"]+"|[0-9.]+|{[^}]+}|.', code)
         return blocks
 
     def _pre(self, code):
+        code = re.sub("“[^”]+”", "", code)
         blocks = self._tokenize(code)
         if blocks.count("Ø"):
             code = code.split("Ø", 1)[0]
@@ -100,15 +101,13 @@ class Gogh(Director, Stack):
     def _run(self, code):
         blocks = self._tokenize(code)
         for elem in blocks:
-            if elem.startswith('“'):
-                pass
-            elif elem.startswith('"') or elem.isnumeric():
+            if (code_page.find(elem[0]) == 34) or elem.isnumeric():
                 self._push(eval(elem))
             elif re.match("(\d+)?\.([\d.]+)?", elem):
                 elem = elem.split(".", 1)
                 elem[1] = elem[1].replace(".", "0")
                 self._push(GoghDecimal(".".join(elem)))
-            elif elem.startswith("{"):
+            elif code_page.find(elem[0]) == 123:
                 self._push(GoghBlock(elem[1:-1]))
             else:
                 reqcode = code_page.index(elem) if elem != "\n" else 32
