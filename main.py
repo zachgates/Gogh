@@ -24,9 +24,9 @@ class Gogh(Director, Stack):
         43 : "_add",
         45 : "_subtract",
         47 : "_divide",
-        58 : "_iff_execute",
+        58 : "_if_execute",
         63 : "_keepif_construct",
-        64 : "_if_execute",
+        64 : "_ifelse_execute",
         94 : "_negate",
         97 : "_toarray",
         110: "_tonumber",
@@ -202,11 +202,6 @@ class Gogh(Director, Stack):
             self._push(GoghInteger(retval // 1))
         else:
             self._push(retval)
-            
-    @Planner.toapprove
-    def _iff_execute(self, stos, tos):
-        if bool(tos):
-            self._pre( "".join(repr(e) for e in stos) )
 
     @Planner.toapprove
     def _keepif_construct(self, stos, tos):
@@ -230,7 +225,13 @@ class Gogh(Director, Stack):
         self._pre(code)
 
     @Planner.toapprove
-    def _if_execute(self, ttos, stos, tos):
+    def _if_execute(self, stos, tos):
+        if bool(tos):
+            code = "".join(repr(e) for e in stos)
+            self._pre(code)
+
+    @Planner.toapprove
+    def _ifelse_execute(self, ttos, stos, tos):
         if bool(tos):
             torun = ttos
         else:
