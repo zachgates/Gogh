@@ -65,6 +65,14 @@ class GoghObject(object):
         """To be written in the superclass."""
         return self
 
+    def __gt__(self, value):
+        """To be written in the subclass."""
+        return True
+
+    def __lt__(self, value):
+        """To be written in the subclass."""
+        return True
+
 
 # Numbers (Integers & Decimals)
 
@@ -217,6 +225,24 @@ class GoghInteger(GoghNumber, int):
     def __pow__(self, value):
         return int.__pow__(self, value)
 
+    def __gt__(self, value):
+        if value._is(GoghNumber):
+            return bool(int.__gt__(self, value))
+        elif value._is(GoghArray):
+            value = len(value)
+            return bool(int.__gt__(self, value))
+        else:
+            return bool(self)
+
+    def __lt__(self, value):
+        if value._is(GoghNumber):
+            return bool(int.__lt__(self, value))
+        elif value._is(GoghArray):
+            value = len(value)
+            return bool(int.__lt__(self, value))
+        else:
+            return (not bool(self))
+
 
 class GoghDecimal(GoghNumber, float):
 
@@ -262,6 +288,24 @@ class GoghDecimal(GoghNumber, float):
 
     def __pow__(self, value):
         return float.__pow__(self, value)
+
+    def __gt__(self, value):
+        if value._is(GoghNumber):
+            return bool(float.__gt__(self, value))
+        elif value._is(GoghArray):
+            value = len(value)
+            return bool(float.__gt__(self, value))
+        else:
+            return bool(self)
+
+    def __lt__(self, value):
+        if value._is(GoghNumber):
+            return bool(float.__lt__(self, value))
+        elif value._is(GoghArray):
+            value = len(value)
+            return bool(float.__lt__(self, value))
+        else:
+            return (not bool(self))
 
 
 # Lists
@@ -364,6 +408,22 @@ class GoghArray(list, GoghObject):
         if value >= 2:
             return GoghArray(sum(zip(*[self]*value), ()))
         return self
+
+    def __gt__(self, value):
+        if value._is(GoghNumber):
+            return bool(len(self) > value)
+        elif value._is(GoghArray):
+            return bool(len(self) > len(value))
+        else:
+            return False
+
+    def __lt__(self, value):
+        if value._is(GoghNumber):
+            return bool(len(self) < value)
+        elif value._is(GoghArray):
+            return bool(len(self) < len(value))
+        else:
+            return True
 
 
 # Strings
@@ -522,3 +582,13 @@ class GoghBlock(list, GoghObject):
     def __neg__(self):
         list.append(self, Frame(94))
         return self
+
+    def __gt__(self, value):
+        if value._is(GoghNumber):
+            return (not bool(value))
+        return True
+
+    def __lt__(self, value):
+        if value._is(GoghNumber):
+            return bool(self)
+        return False

@@ -27,6 +27,8 @@ class Gogh(Director, Stack):
         45 : "_subtract",
         47 : "_divide",
         58 : "_if_execute",
+        60 : "_lessthan",
+        62 : "_greaterthan",
         63 : "_keepif_construct",
         64 : "_ifelse_execute",
         82 : "_reverse_top",
@@ -50,6 +52,8 @@ class Gogh(Director, Stack):
         45 : 2,
         47 : 2,
         58 : 2,
+        60 : 2,
+        62 : 2,
         63 : 2,
         64 : 3,
         82 : 1,
@@ -73,6 +77,8 @@ class Gogh(Director, Stack):
         45 : [GoghObject, GoghObject],
         47 : [GoghObject, GoghObject],
         58 : [GoghBlock, GoghObject],
+        60 : [GoghObject, GoghObject],
+        62 : [GoghObject, GoghObject],
         63 : [GoghObject, GoghObject],
         64 : [GoghBlock, GoghBlock, GoghObject],
         82 : [GoghObject],
@@ -210,6 +216,20 @@ class Gogh(Director, Stack):
     @Planner.toapprove
     def _modulo(self, stos, tos):
         self._push(stos % tos)
+
+    @Planner.toapprove
+    def _greaterthan(self, stos, tos):
+        if stos > tos:
+            self._push(GoghInteger(1))
+        else:
+            self._push(GoghInteger(0))
+
+    @Planner.toapprove
+    def _lessthan(self, stos, tos):
+        if stos < tos:
+            self._push(GoghInteger(1))
+        else:
+            self._push(GoghInteger(0))
 
     @Planner.toapprove
     def _negate(self, tos):
