@@ -452,7 +452,7 @@ class GoghBlock(list, GoghObject):
     # Controllers
 
     def __init__(self, code):
-        list.__init__(self, self._tokenize(code))
+        list.__init__(self, self._pre(code))
 
     def __str__(self):
         return "".join(str(i) for i in self)
@@ -461,6 +461,17 @@ class GoghBlock(list, GoghObject):
         return "{%s}" % "".join(repr(elem) for elem in self)
 
     def _tokenize(self, code):
+        blocks = re.findall('"[^"]+"|[0-9.]+|{[^}]+}|.', code)
+        return blocks
+
+    def _pre(self, code):
+        blocks = self._tokenize(code)
+        if blocks.count("Ø"):
+            return []
+        else:
+            return self._build(code)
+
+    def _build(self, code):
         blocks = re.findall('"[^"]+"|[0-9.]+|{[^}]+}|.', code)
         for elem in blocks:
             if code_page.find(elem[0]) == 34:
