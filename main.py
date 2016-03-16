@@ -1,4 +1,5 @@
 import re
+import sys
 from stack import Stack
 from control import Director, Planner
 from gtypes import GoghObject, GoghNumber
@@ -20,6 +21,7 @@ class Gogh(Director, Stack):
         11 : "_keepif_destruct",
         33 : "_lognot",
         37 : "_modulo",
+        39 : "_out_top",
         42 : "_multiply",
         43 : "_add",
         45 : "_subtract",
@@ -35,12 +37,14 @@ class Gogh(Director, Stack):
         114: "_root",
         115: "_tostring",
         120: "_execute",
+        151: "_print_top",
     }
     _req2arities = {
         0  : 1,
         11 : 2,
         33 : 1,
         37 : 2,
+        39 : 1,
         42 : 2,
         43 : 2,
         45 : 2,
@@ -56,13 +60,14 @@ class Gogh(Director, Stack):
         114: 2,
         115: 1,
         120: 1,
-        247: 2,
+        151: 1,
     }
     _req2argtype = {
         0  : [GoghObject],
         11 : [GoghObject, GoghObject],
         33 : [GoghObject],
         37 : [GoghObject, GoghObject],
+        39 : [GoghObject],
         42 : [GoghObject, GoghObject],
         43 : [GoghObject, GoghObject],
         45 : [GoghObject, GoghObject],
@@ -78,7 +83,7 @@ class Gogh(Director, Stack):
         114: [GoghObject, GoghNumber],
         115: [GoghObject],
         120: [GoghBlock],
-        247: [GoghObject, GoghBlock],
+        151: [GoghObject],
     }
     _req2default = {
         112: [NotImplemented, GoghInteger(2)],
@@ -159,6 +164,16 @@ class Gogh(Director, Stack):
     def _output(self, tos):
         self._update(tos, True)
         self.broadcast(0)
+
+    @Planner.toapprove
+    def _out_top(self, tos):
+        sys.stdout.write(tos._output())
+        self._push(tos)
+
+    @Planner.toapprove
+    def _print_top(self, tos):
+        print(tos._output())
+        self._push(tos)
 
     # Conversion Operators
 
