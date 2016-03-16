@@ -32,6 +32,7 @@ class Planner(object):
                 if defaults:
                     args[i] = defaults[i]
                 else:
+                    self._push(*args)
                     return self
         func(*args)
         return self
