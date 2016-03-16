@@ -18,6 +18,7 @@ class Gogh(Director, Stack):
     _req2func = {
         0  : "_output",
         11 : "_keepif_destruct",
+        33 : "_lognot",
         37 : "_modulo",
         42 : "_multiply",
         43 : "_add",
@@ -34,6 +35,7 @@ class Gogh(Director, Stack):
     _req2arities = {
         0  : 1,
         11 : 2,
+        33 : 1,
         37 : 2,
         42 : 2,
         43 : 2,
@@ -50,6 +52,7 @@ class Gogh(Director, Stack):
     _req2argtype = {
         0  : [GoghObject],
         11 : [GoghObject, GoghObject],
+        33 : [GoghObject],
         37 : [GoghObject, GoghObject],
         42 : [GoghObject, GoghObject],
         43 : [GoghObject, GoghObject],
@@ -200,3 +203,7 @@ class Gogh(Director, Stack):
     def _keepif_destruct(self, stos, tos):
         if bool(stos):
             self._push(tos)
+
+    @Planner.toapprove
+    def _lognot(self, tos):
+        self._push(not bool(tos))
