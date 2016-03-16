@@ -207,7 +207,7 @@ class Gogh(Director, Stack):
         if isinstance(retval, (int, float)) and (retval % 1):
             self._push(GoghInteger(retval // 1))
         else:
-            self._push(retval);
+            self._push(retval)
 
     # Control Operations
 
