@@ -150,10 +150,14 @@ class Gogh(Director, Stack):
 
     # Manipulators
 
+    # I/O Operators
+
     @Planner.toapprove
     def _output(self, tos):
         self._update(tos, True)
         self.broadcast(0)
+
+    # Conversion Operators
 
     @Planner.toapprove
     def _toarray(self, tos):
@@ -166,6 +170,8 @@ class Gogh(Director, Stack):
     @Planner.toapprove
     def _tostring(self, tos):
         self._push(tos._tostring())
+
+    # Arithmetic Operations
 
     @Planner.toapprove
     def _add(self, stos, tos):
@@ -202,6 +208,8 @@ class Gogh(Director, Stack):
             self._push(GoghInteger(retval // 1))
         else:
             self._push(retval)
+
+    # Control Operations
 
     @Planner.toapprove
     def _keepif_construct(self, stos, tos):
