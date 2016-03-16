@@ -24,6 +24,7 @@ class Gogh(Director, Stack):
         43 : "_add",
         45 : "_subtract",
         47 : "_divide",
+        58 : "_iff_execute",
         63 : "_keepif_construct",
         64 : "_if_execute",
         94 : "_negate",
@@ -43,6 +44,7 @@ class Gogh(Director, Stack):
         43 : 2,
         45 : 2,
         47 : 2,
+        58 : 2,
         63 : 2,
         64 : 3,
         94 : 1,
@@ -63,6 +65,7 @@ class Gogh(Director, Stack):
         43 : [GoghObject, GoghObject],
         45 : [GoghObject, GoghObject],
         47 : [GoghObject, GoghObject],
+        58 : [GoghBlock, GoghObject],
         63 : [GoghObject, GoghObject],
         64 : [GoghBlock, GoghBlock, GoghObject],
         94 : [GoghObject],
@@ -199,6 +202,11 @@ class Gogh(Director, Stack):
             self._push(GoghInteger(retval // 1))
         else:
             self._push(retval)
+            
+    @Planner.toapprove
+    def _iff_execute(self, stos, tos):
+        if bool(tos):
+            self._pre( "".join(repr(e) for e in stos) )
 
     @Planner.toapprove
     def _keepif_construct(self, stos, tos):
