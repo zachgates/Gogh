@@ -25,6 +25,7 @@ class Gogh(Director, Stack):
         45 : "_subtract",
         47 : "_divide",
         63 : "_keepif_construct",
+        64 : "_if_execute",
         94 : "_negate",
         97 : "_toarray",
         110: "_tonumber",
@@ -43,6 +44,7 @@ class Gogh(Director, Stack):
         45 : 2,
         47 : 2,
         63 : 2,
+        64 : 3,
         94 : 1,
         97 : 1,
         110: 1,
@@ -62,6 +64,7 @@ class Gogh(Director, Stack):
         45 : [GoghObject, GoghObject],
         47 : [GoghObject, GoghObject],
         63 : [GoghObject, GoghObject],
+        64 : [GoghBlock, GoghBlock, GoghObject],
         94 : [GoghObject],
         97 : [GoghObject],
         110: [GoghObject],
@@ -216,4 +219,13 @@ class Gogh(Director, Stack):
     @Planner.toapprove
     def _execute(self, tos):
         code = "".join(repr(e) for e in tos)
+        self._pre(code)
+
+    @Planner.toapprove
+    def _if_execute(self, ttos, stos, tos):
+        if bool(tos):
+            torun = ttos
+        else:
+            torun = stos
+        code = "".join(repr(e) for e in torun)
         self._pre(code)
