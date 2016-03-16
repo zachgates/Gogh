@@ -31,7 +31,7 @@ class Gogh(Director, Stack):
         112: "_power",
         114: "_root",
         115: "_tostring",
-        120: "_execute_instack",
+        120: "_execute",
     }
     _req2arities = {
         0  : 1,
@@ -50,6 +50,7 @@ class Gogh(Director, Stack):
         114: 2,
         115: 1,
         120: 1,
+        247: 2,
     }
     _req2argtype = {
         0  : [GoghObject],
@@ -68,6 +69,7 @@ class Gogh(Director, Stack):
         114: [GoghObject, GoghNumber],
         115: [GoghObject],
         120: [GoghBlock],
+        247: [GoghObject, GoghBlock],
     }
     _req2default = {
         112: [NotImplemented, GoghInteger(2)],
@@ -101,7 +103,7 @@ class Gogh(Director, Stack):
         code = re.sub("“[^”]+”", "", code)
         blocks = self._tokenize(code)
         if blocks.count("Ø"):
-            code = code.split("Ø", 1)[0]
+            code = "".join(blocks[:blocks.index("Ø")])
             try:
                 while True:
                     self._run(code)
@@ -212,9 +214,6 @@ class Gogh(Director, Stack):
         self._push(not bool(tos))
 
     @Planner.toapprove
-    def _execute_instack(self, tos):
-        for block in tos:
-            if isinstance(block, Frame):
-                self._request(block)
-            else:
-                self._push(block)
+    def _execute(self, tos):
+        code = "".join(repr(e) for e in tos)
+        self._pre(code)
