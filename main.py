@@ -17,11 +17,13 @@ class Gogh(Director, Stack):
     _dreq = "_noop"
     _req2func = {
         0  : "_output",
+        11 : "_keepif_destruct",
         37 : "_modulo",
         42 : "_multiply",
         43 : "_add",
         45 : "_subtract",
         47 : "_divide",
+        63 : "_keepif_construct",
         94 : "_negate",
         97 : "_toarray",
         110: "_tonumber",
@@ -31,11 +33,13 @@ class Gogh(Director, Stack):
     }
     _req2arities = {
         0  : 1,
+        11 : 2,
         37 : 2,
         42 : 2,
         43 : 2,
         45 : 2,
         47 : 2,
+        63 : 2,
         94 : 1,
         97 : 1,
         110: 1,
@@ -45,11 +49,13 @@ class Gogh(Director, Stack):
     }
     _req2argtype = {
         0  : [GoghObject],
+        11 : [GoghObject, GoghObject],
         37 : [GoghObject, GoghObject],
         42 : [GoghObject, GoghObject],
         43 : [GoghObject, GoghObject],
         45 : [GoghObject, GoghObject],
         47 : [GoghObject, GoghObject],
+        63 : [GoghObject, GoghObject],
         94 : [GoghObject],
         97 : [GoghObject],
         110: [GoghObject],
@@ -182,3 +188,15 @@ class Gogh(Director, Stack):
             self._push(GoghInteger(retval // 1))
         else:
             self._push(retval)
+
+    @Planner.toapprove
+    def _keepif_construct(self, stos, tos):
+        if bool(stos):
+            self._push(stos, tos)
+        else:
+            self._push(stos)
+
+    @Planner.toapprove
+    def _keepif_destruct(self, stos, tos):
+        if bool(stos):
+            self._push(tos)

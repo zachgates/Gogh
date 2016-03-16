@@ -71,6 +71,13 @@ class GoghObject(object):
 
 class GoghNumber(GoghObject):
 
+    # Controllers
+
+    def __bool__(self):
+        if self != 0:
+            return True
+        return False
+
     # Conversions
 
     def _tonumber(self):
@@ -284,6 +291,11 @@ class GoghArray(list, GoghObject):
         elems = " ".join(repr(i) for i in self)
         return "[%s]" % elems
 
+    def __bool__(self):
+        if len(self):
+            return True
+        return False
+
     def _splice(self, start, stop):
         opn = self[:start]
         cls = self[stop:]
@@ -369,6 +381,11 @@ class GoghString(GoghArray):
 
     def __repr__(self):
         return '"%s"' % "".join(str(i) if i != "\n" else "\\n" for i in self)
+
+    def __bool__(self):
+        if len(self):
+            return True
+        return False
 
     # Output
 
@@ -459,6 +476,11 @@ class GoghBlock(list, GoghObject):
 
     def __repr__(self):
         return "{%s}" % "".join(repr(elem) for elem in self)
+
+    def __bool__(self):
+        if len(self):
+            return True
+        return False
 
     def _tokenize(self, code):
         blocks = re.findall('"[^"]+"|[0-9.]+|{[^}]+}|.', code)
