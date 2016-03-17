@@ -103,7 +103,7 @@ class Gogh(Director, Stack):
         68 : [GoghObject],
         70 : [GoghObject],
         74 : [GoghObject, GoghObject],
-        81 : [GoghNumber, GoghBlock],
+        81 : [GoghInteger, GoghBlock],
         82 : [GoghObject],
         83 : [GoghObject, GoghObject],
         94 : [GoghObject],
@@ -380,6 +380,7 @@ class Gogh(Director, Stack):
     def _nth_sequence(self, stos, tos):
         i = 0 # Iteration
         j = []
+        if int(stos) < 0: raise ValueError('sequence index must be positive')
         while len(j) < int(stos):
             if bool(self._runoffstack(tos, i)): j.append(i)
             i += 1
