@@ -47,8 +47,8 @@ class Gogh(Director, Stack):
         120: "_execute",
         128: "_twofalse",
         129: "_twotrue",
-        130: "_ten",
-        131: "_hundred",
+        130: "_square",
+        131: "_cube",
         151: "_print_top",
         247: "_exec_off_stack",
     }
@@ -80,6 +80,8 @@ class Gogh(Director, Stack):
         114: 2,
         115: 1,
         120: 1,
+        130: 1,
+        131: 1,
         151: 1,
         247: 2,
     }
@@ -111,6 +113,8 @@ class Gogh(Director, Stack):
         114: [GoghObject, GoghNumber],
         115: [GoghObject],
         120: [GoghBlock],
+        130: [GoghObject],
+        131: [GoghObject],
         151: [GoghObject],
         247: [GoghObject, GoghBlock],
     }
@@ -394,12 +398,12 @@ class Gogh(Director, Stack):
         self._push(GoghInteger(1), GoghInteger(1))
 
     @Planner.toapprove
-    def _ten(self):
-        self._push(GoghInteger(10))
+    def _square(self, tos):
+        self._push(tos ** 2)
 
     @Planner.toapprove
-    def _hundred(self):
-        self._push(GoghInteger(100))
+    def _cube(self, tos):
+        self._push(tos ** 3)
 
     # Various Operations
 
