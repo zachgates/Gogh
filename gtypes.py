@@ -1,4 +1,5 @@
 import re
+import string
 from functools import reduce
 
 
@@ -73,6 +74,14 @@ class GoghObject(object):
         """To be written in the subclass."""
         return True
 
+    def split(self, value):
+        """To be written in the subclass."""
+        return self
+
+    def join(self, value):
+        """To be written in the subclass."""
+        return self
+
 
 # Numbers (Integers & Decimals)
 
@@ -95,7 +104,7 @@ class GoghNumber(GoghObject):
         value = str(value)
         if re.match("(\d+)?\.(\d+)?", value):
             return GoghDecimal(value)
-        elif value.isnumeric():
+        elif value in string.digits:
             return GoghInteger(value)
         else:
             return GoghInteger(sum(ord(c) for c in value))
@@ -112,7 +121,7 @@ class GoghNumber(GoghObject):
         if value._is(GoghString):
             value = str(value)
             prec = max(map(self._prec, [self, value]))
-            if value.isnumeric():
+            if value in string.digits:
                 return type(self)(round(float(self) + int(value), prec))
             elif re.match("(\d+)?\.(\d+)?", value):
                 value = 0 if value == "." else value
@@ -128,7 +137,7 @@ class GoghNumber(GoghObject):
         if value._is(GoghString):
             value = str(value)
             prec = max(map(self._prec, [self, value]))
-            if value.isnumeric():
+            if value in string.digits:
                 return type(self)(round(float(self) - int(value), prec))
             elif re.match("(\d+)?\.(\d+)?", value):
                 value = 0 if value == "." else value
@@ -144,7 +153,7 @@ class GoghNumber(GoghObject):
         if value._is(GoghString):
             value = str(value)
             prec = max(map(self._prec, [self, value]))
-            if value.isnumeric():
+            if value in string.digits:
                 return type(self)(round(float(self) * int(value), prec))
             elif re.match("(\d+)?\.(\d+)?", value):
                 value = 0 if value == "." else value
@@ -166,7 +175,7 @@ class GoghNumber(GoghObject):
                 return GoghInteger(retval)
         elif value._is(GoghString):
             value = str(value)
-            if value.isnumeric():
+            if value in string.digits:
                 return type(self)(float(self) / int(value))
             elif re.match("(\d+)?\.(\d+)?", value):
                 value = 0 if value == "." else value
@@ -184,6 +193,16 @@ class GoghNumber(GoghObject):
                 return GoghDecimal(round(retval, prec))
             else:
                 return GoghInteger(retval)
+        else:
+            return self
+
+    def split(self, value):
+        if value._is(GoghNumber):
+            mid = (float(self) + float(value)) / 2
+            if mid % 1:
+                return GoghDecimal(mid)
+            else:
+                return GoghInteger(mid)
         else:
             return self
 
@@ -425,6 +444,23 @@ class GoghArray(list, GoghObject):
         else:
             return True
 
+    def split(self, value):
+        retval = GoghArray([])
+        temp = GoghArray([])
+        for elem in self:
+            if elem == value:
+                retval.append(temp)
+                temp = GoghArray([])
+            else:
+                temp.append(elem)
+        return retval
+
+    def join(self, value):
+        if value._is(GoghBlock):
+            value = "".join(repr(e) for e in value)
+        retval = str(value).join(str(i) for i in self)
+        return GoghString(retval)
+
 
 # Strings
 
@@ -511,6 +547,14 @@ class GoghString(GoghArray):
         else:
             return self
 
+    def split(self, value):
+        if value._is((GoghNumber, GoghString)):
+            retval = str(self).split(str(value))
+            retval = [GoghString(elem) for elem in retval]
+            return retval
+        else:
+            return self
+
 
 # Code Blocks
 
@@ -547,7 +591,7 @@ class GoghBlock(list, GoghObject):
         for elem in blocks:
             if code_page.find(elem[0]) == 34:
                 yield GoghString(eval(elem))
-            elif elem.isnumeric():
+            elif elem in string.digits:
                 yield GoghInteger(eval(elem))
             elif re.match("(\d+)?\.([\d.]+)?", elem):
                 elem = elem.split(".", 1)

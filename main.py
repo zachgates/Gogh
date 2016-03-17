@@ -1,5 +1,6 @@
 import re
 import sys
+import string
 from stack import Stack
 from control import Director, Planner
 from gtypes import GoghObject, GoghNumber
@@ -38,6 +39,8 @@ class Gogh(Director, Stack):
         62 : "_greaterthan",
         63 : "_keepif_construct",
         64 : "_ifelse_execute",
+        68 : "_dump",
+        74 : "_join",
         82 : "_reverse_top",
         83 : "_split",
         94 : "_negate",
@@ -49,7 +52,12 @@ class Gogh(Director, Stack):
         114: "_root",
         115: "_tostring",
         120: "_execute",
+        128: "_twofalse",
+        129: "_twotrue",
+        130: "_ten",
+        131: "_hundred",
         151: "_print_top",
+        247: "_exec_off_stack",
     }
     _req2arities = {
         0  : 1,
@@ -66,6 +74,8 @@ class Gogh(Director, Stack):
         62 : 2,
         63 : 2,
         64 : 3,
+        68 : 1,
+        74 : 2,
         82 : 1,
         83 : 2,
         94 : 1,
@@ -78,6 +88,7 @@ class Gogh(Director, Stack):
         115: 1,
         120: 1,
         151: 1,
+        247: 2,
     }
     _req2argtype = {
         0  : [GoghObject],
@@ -94,6 +105,8 @@ class Gogh(Director, Stack):
         62 : [GoghObject, GoghObject],
         63 : [GoghObject, GoghObject],
         64 : [GoghBlock, GoghBlock, GoghObject],
+        68 : [GoghObject],
+        74 : [GoghObject, GoghObject],
         82 : [GoghObject],
         83 : [GoghObject, GoghObject],
         94 : [GoghObject],
@@ -106,8 +119,10 @@ class Gogh(Director, Stack):
         115: [GoghObject],
         120: [GoghBlock],
         151: [GoghObject],
+        247: [GoghObject, GoghBlock],
     }
     _req2default = {
+        74 : [NotImplemented, GoghString("")],
         112: [NotImplemented, GoghInteger(2)],
         114: [NotImplemented, GoghInteger(2)],
     }
@@ -119,7 +134,7 @@ class Gogh(Director, Stack):
 
     # Controllers
 
-    def __init__(self, code, ip, out, err, endchar):
+    def __init__(self, code, ip, out, err, endchar, wantexit=True):
         Director.__init__(self, out, endchar)
         Stack.__init__(self, ip)
         if err != None:
@@ -128,8 +143,9 @@ class Gogh(Director, Stack):
         self.intreg = None
         self.strreg = None
         self.strlit = False
-        self.frames = self._pre(code)
-        self._exit(0)
+        self._pre(code)
+        if wantexit:
+            self._exit(0)
 
     def _tokenize(self, code):
         blocks = re.findall('"[^"]+"|[0-9.]+|{[^}]+}|.', code)
@@ -151,7 +167,7 @@ class Gogh(Director, Stack):
     def _run(self, code):
         blocks = self._tokenize(code)
         for elem in blocks:
-            if (code_page.find(elem[0]) == 34) or elem.isnumeric():
+            if (code_page.find(elem[0]) == 34) or (elem in string.digits):
                 self._push(eval(elem))
             elif re.match("(\d+)?\.([\d.]+)?", elem):
                 elem = elem.split(".", 1)
@@ -163,6 +179,11 @@ class Gogh(Director, Stack):
                 reqcode = code_page.index(elem) if elem != "\n" else 32
                 self.cchar = elem
                 self._request(reqcode)
+
+    def _runoffstack(self, code, ip=None):
+        code = "".join(repr(e) for e in code)
+        throwaway = Gogh(code, ip, False, None, "", False)
+        return throwaway._TOS
 
     def _request(self, action):
         areq = self._req2func.get(action, self._dreq)
@@ -301,6 +322,11 @@ class Gogh(Director, Stack):
         code = "".join(repr(e) for e in torun)
         self._pre(code)
 
+    @Planner.toapprove
+    def _exec_off_stack(self, stos, tos):
+        retval = self._runoffstack(tos, stos)
+        self._push(retval)
+
     # Array Operations
 
     @Planner.toapprove
@@ -313,47 +339,34 @@ class Gogh(Director, Stack):
 
     @Planner.toapprove
     def _split(self, stos, tos):
+        self._push(stos.split(tos))
 
-        _stos = str(stos) if stos._is(GoghString) else stos
+    @Planner.toapprove
+    def _join(self, stos, tos):
+        self._push(stos.join(tos))
 
-        if stos._is(GoghArray):
-            if tos._is(GoghNumber):
-                    self._push(_stos[:tos], _stos[tos:])
-            elif tos._is(GoghString):
-                if stos._is(GoghString):
-                    # Remove the `*` to push an array rather than 2 items
-                    self._push(*_stos.split(str(tos)))
-                else:
-                    l = stos.index(tos)
-                    self._push(_stos[:l], _stos[l:])
-            else:
-                self._push(stos)
-        elif stos._is(GoghNumber):
-            if tos._is(GoghString):
-                self._push(tos[:stos], tos[stos:])
-            if tos._is(GoghArray):
-                self._push(tos[:stos], tos[stos:])
-            else:
-                self._push(tos)
+    @Planner.toapprove
+    def _dump(self, tos):
+        if tos._is((GoghNumber, GoghBlock)):
+            self._push(tos)
         else:
-            self._push(stos)
+            for elem in tos:
+                self._push(elem)
 
-    # Looping Operations
-
-    @Planner.toapprove
-    def _loop(self, stos, tos):
-        if stos._is(GoghNumber):
-            stos = GoghString(stos)
-        isstr = stos._is(GoghString)
-
-        for i in stos:
-            pass
-
-        '''
-        code = "".join(repr(e) for e in torun)
-        self._pre(code)
-        '''
+    # Pre-initialized Variables
 
     @Planner.toapprove
-    def _map(self, stos, tos):
-        pass
+    def _twofalse(self):
+        self._push(GoghInteger(0), GoghInteger(0))
+
+    @Planner.toapprove
+    def _twotrue(self):
+        self._push(GoghInteger(1), GoghInteger(1))
+
+    @Planner.toapprove
+    def _ten(self):
+        self._push(GoghInteger(10))
+
+    @Planner.toapprove
+    def _hundred(self):
+        self._push(GoghInteger(100))

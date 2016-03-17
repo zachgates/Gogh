@@ -9,28 +9,33 @@ class Stack(list, Planner):
 
     _dreq = "_noop"
     _req2func = {
+        1  : "_copyn",
         3  : "_empty",
         5  : "_swap",
         6  : "_copy",
         8  : "_rotate",
         17 : "_discard",
         28 : "_duplicate",
+        31 : "_collect",
         32 : "_noop",
         36 : "_revstack",
         250: "_ltrans",
         251: "_rtrans",
     }
     _req2arities = {
+        1  : 1,
         6  : 1,
         250: 1,
         251: 1,
     }
     _req2argtype = {
+        1  : [GoghInteger],
         6  : [GoghInteger],
         250: [GoghInteger],
         251: [GoghInteger],
     }
     _req2default = {
+        1  : [1],
         6  : [0],
         250: [1],
         251: [1],
@@ -109,11 +114,24 @@ class Stack(list, Planner):
 
     @Planner.toapprove
     def _copy(self, n):
-        if self._islength(n+1) and (n == abs(n)):
-            elem = list.__getitem__(self, -n-1)
-            list.append(self, elem)
+        n = int(n)
+        if self._islength(n+1):
+            if n == abs(n):
+                elem = list.__getitem__(self, -n-1)
+                list.append(self, elem)
         else:
             self.broadcast(3, n+1)
+
+    @Planner.toapprove
+    def _copyn(self, n):
+        n = int(n)
+        if self._islength(n):
+            if n == abs(n):
+                elem = self._pull(n, True)
+                list.__iadd__(self, elem)
+                list.__iadd__(self, elem)
+        else:
+            self.broadcast(3, n)
 
     @Planner.toapprove
     def _swap(self):
@@ -144,3 +162,9 @@ class Stack(list, Planner):
             while n > 0:
                 list.insert(self, 0, self._TOS)
                 n -= 1
+
+    @Planner.toapprove
+    def _collect(self):
+        retval = GoghArray(elem for elem in self)
+        list.clear(self)
+        list.append(self, retval)
