@@ -180,7 +180,10 @@ class Gogh(Director, Stack):
     def _runoffstack(self, code, ip=None):
         code = "".join(repr(e) for e in code)
         throwaway = Gogh(code, ip, False, None, "", False)
-        return throwaway._TOS
+        if len(throwaway) > 0:
+            return throwaway._TOS
+        else:
+            return type(ip)(None)
 
     def _request(self, action):
         areq = self._req2func.get(action, self._dreq)
@@ -384,11 +387,13 @@ class Gogh(Director, Stack):
 
     @Planner.toapprove
     def _map(self, stos, tos):
-        r = [self._runoffstack(tos, i) for i in stos]
         if stos._is(GoghString):
-            self._push("".join(map(str, r)))
+            mpd = [self._runoffstack(tos, GoghString(e)) for e in stos]
+            mpd = [str(e) for e in mpd if not e._is(GoghBlock)]
+            self._push(GoghString("".join(mpd)))
         else:
-            self._push(r)
+            mpd = GoghArray(self._runoffstack(tos, e) for e in stos)
+            self._push(mpd)
 
     # Pre-initialized Variables
 

@@ -214,6 +214,14 @@ class GoghNumber(GoghObject):
 
 class GoghInteger(GoghNumber, int):
 
+    # Controllers
+
+    def __new__(cls, value):
+        if (value == None) or (value == ""):
+            return int.__new__(cls, 0)
+        else:
+            return int.__new__(cls, value)
+
     # Arithmetic Operations
 
     def __add__(self, value):
@@ -273,7 +281,7 @@ class GoghDecimal(GoghNumber, float):
     # Controllers
 
     def __new__(cls, value):
-        if value == ".":
+        if (value == None) or (value == "."):
             return float.__new__(cls, 0)
         else:
             return float.__new__(cls, value)
@@ -475,7 +483,10 @@ class GoghString(GoghArray):
     # Controllers
 
     def __init__(self, value):
-        GoghArray.__init__(self, str(value))
+        if value == None:
+            GoghArray.__init__(self, "")
+        else:
+            GoghArray.__init__(self, str(value))
 
     def __str__(self):
         return "".join(str(i) for i in self)
