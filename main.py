@@ -157,7 +157,8 @@ class Gogh(Director, Stack):
     def _run(self, code):
         blocks = self._tokenize(code)
         for elem in blocks:
-            if (code_page.find(elem[0]) == 34) or (elem in string.digits):
+            isnum = all(e in string.digits for e in elem)
+            if (code_page.find(elem[0]) == 34) or isnum:
                 self._push(eval(elem))
             elif re.match("(\d+)?\.([\d.]+)?", elem):
                 elem = elem.split(".", 1)
