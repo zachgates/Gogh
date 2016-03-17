@@ -31,6 +31,7 @@ class Gogh(Director, Stack):
         62 : "_greaterthan",
         63 : "_keepif_construct",
         64 : "_ifelse_execute",
+        68 : "_dump",
         74 : "_join",
         82 : "_reverse_top",
         83 : "_split",
@@ -59,6 +60,7 @@ class Gogh(Director, Stack):
         62 : 2,
         63 : 2,
         64 : 3,
+        68 : 1,
         74 : 2,
         82 : 1,
         83 : 2,
@@ -87,6 +89,7 @@ class Gogh(Director, Stack):
         62 : [GoghObject, GoghObject],
         63 : [GoghObject, GoghObject],
         64 : [GoghBlock, GoghBlock, GoghObject],
+        68 : [GoghObject],
         74 : [GoghObject, GoghObject],
         82 : [GoghObject],
         83 : [GoghObject, GoghObject],
@@ -323,3 +326,11 @@ class Gogh(Director, Stack):
     @Planner.toapprove
     def _join(self, stos, tos):
         self._push(stos.join(tos))
+
+    @Planner.toapprove
+    def _dump(self, tos):
+        if tos._is((GoghNumber, GoghBlock)):
+            self._push(tos)
+        else:
+            for elem in tos:
+                self._push(elem)
