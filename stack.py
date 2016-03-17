@@ -16,6 +16,7 @@ class Stack(list, Planner):
         8  : "_rotate",
         17 : "_discard",
         28 : "_duplicate",
+        31 : "_collect",
         32 : "_noop",
         36 : "_revstack",
         250: "_ltrans",
@@ -161,3 +162,9 @@ class Stack(list, Planner):
             while n > 0:
                 list.insert(self, 0, self._TOS)
                 n -= 1
+
+    @Planner.toapprove
+    def _collect(self):
+        retval = GoghArray(elem for elem in self)
+        list.clear(self)
+        list.append(self, retval)
