@@ -103,7 +103,7 @@ class Gogh(Director, Stack):
         68 : [GoghObject],
         70 : [GoghObject],
         74 : [GoghObject, GoghObject],
-        81 : [GoghNumber, GoghObject],
+        81 : [GoghNumber, GoghBlock],
         82 : [GoghObject],
         83 : [GoghObject, GoghObject],
         94 : [GoghObject],
