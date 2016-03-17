@@ -375,7 +375,12 @@ class Gogh(Director, Stack):
 
     @Planner.toapprove
     def _nth_sequence(self, stos, tos):
-        pass
+        i = 0 # Iteration
+        j = []
+        while len(j) < int(stos):
+            if bool(self._runoffstack(tos, i)): j.append(i)
+            i += 1
+        self._push(j[-1] if len(j) == int(stos) and j else 0)
 
     @Planner.toapprove
     def _map(self, stos, tos):
