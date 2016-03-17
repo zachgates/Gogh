@@ -313,10 +313,9 @@ class Gogh(Director, Stack):
 
     @Planner.toapprove
     def _split(self, stos, tos):
-        if stos._is(GoghString):
-            _stos = str(stos)
-        else:
-            _stos = stos
+
+        _stos = str(stos) if stos._is(GoghString) else stos
+
         if stos._is(GoghArray):
             if tos._is(GoghNumber):
                     self._push(_stos[:tos], _stos[tos:])
@@ -344,7 +343,7 @@ class Gogh(Director, Stack):
     @Planner.toapprove
     def _loop(self, stos, tos):
         if stos._is(GoghNumber):
-            stos = str(stos)
+            stos = GoghString(stos)
         isstr = stos._is(GoghString)
 
         for i in stos:
