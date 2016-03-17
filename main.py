@@ -39,6 +39,7 @@ class Gogh(Director, Stack):
         83 : "_split",
         94 : "_negate",
         97 : "_toarray",
+        109: "_map",
         110: "_tonumber",
         112: "_power",
         114: "_root",
@@ -73,6 +74,7 @@ class Gogh(Director, Stack):
         83 : 2,
         94 : 1,
         97 : 1,
+        109: 2,
         110: 1,
         112: 2,
         114: 2,
@@ -103,6 +105,7 @@ class Gogh(Director, Stack):
         83 : [GoghObject, GoghObject],
         94 : [GoghObject],
         97 : [GoghObject],
+        109: [GoghObject, GoghBlock],
         110: [GoghObject],
         112: [GoghObject, GoghNumber],
         114: [GoghObject, GoghNumber],
@@ -364,6 +367,16 @@ class Gogh(Director, Stack):
         else:
             for elem in tos:
                 self._push(elem)
+
+    # Looping Functions
+
+    @Planner.toapprove
+    def _map(self, stos, tos):
+        r = [self._runoffstack(tos, i) for i in stos]
+        if stos._is(GoghString):
+            self._push("".join(map(str, r)))
+        else:
+            self._push(r)
 
     # Pre-initialized Variables
 
