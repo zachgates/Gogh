@@ -4,6 +4,7 @@
 import sys
 import os
 import re
+import string
 import main
 import gtypes
 
@@ -22,7 +23,7 @@ class clist(list):
         for val in rems:
             if not val:
                 yield gtypes.GoghString(reps.pop(0))
-            elif val.isnumeric():
+            elif val in string.digits:
                 yield gtypes.GoghInteger(val)
             elif re.match(clist.f_regex, val):
                 yield gtypes.GoghDecimal(val)

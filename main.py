@@ -1,5 +1,6 @@
 import re
 import sys
+import string
 from stack import Stack
 from control import Director, Planner
 from gtypes import GoghObject, GoghNumber
@@ -42,6 +43,10 @@ class Gogh(Director, Stack):
         114: "_root",
         115: "_tostring",
         120: "_execute",
+        128: "_twofalse",
+        129: "_twotrue",
+        130: "_ten",
+        131: "_hundred",
         151: "_print_top",
         247: "_exec_off_stack",
     }
@@ -149,7 +154,7 @@ class Gogh(Director, Stack):
     def _run(self, code):
         blocks = self._tokenize(code)
         for elem in blocks:
-            if (code_page.find(elem[0]) == 34) or elem.isnumeric():
+            if (code_page.find(elem[0]) == 34) or (elem in string.digits):
                 self._push(eval(elem))
             elif re.match("(\d+)?\.([\d.]+)?", elem):
                 elem = elem.split(".", 1)
@@ -334,3 +339,21 @@ class Gogh(Director, Stack):
         else:
             for elem in tos:
                 self._push(elem)
+
+    # Pre-initialized Variables
+
+    @Planner.toapprove
+    def _twofalse(self):
+        self._push(GoghInteger(0), GoghInteger(0))
+
+    @Planner.toapprove
+    def _twotrue(self):
+        self._push(GoghInteger(1), GoghInteger(1))
+
+    @Planner.toapprove
+    def _ten(self):
+        self._push(GoghInteger(10))
+
+    @Planner.toapprove
+    def _hundred(self):
+        self._push(GoghInteger(100))
