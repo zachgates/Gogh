@@ -16,13 +16,6 @@ class Gogh(Director, Stack):
 
     # Storage
 
-    '''
-    Note to self: Remove this list before commiting...
-    Try to add...
-     - loop
-     - map
-    '''
-
     _dreq = "_noop"
     _req2func = {
         0  : "_output",
@@ -45,7 +38,6 @@ class Gogh(Director, Stack):
         83 : "_split",
         94 : "_negate",
         97 : "_toarray",
-        108: "_loop",
         109: "_map",
         110: "_tonumber",
         112: "_power",
@@ -80,7 +72,6 @@ class Gogh(Director, Stack):
         83 : 2,
         94 : 1,
         97 : 1,
-        108: 2,
         109: 2,
         110: 1,
         112: 2,
@@ -111,7 +102,6 @@ class Gogh(Director, Stack):
         83 : [GoghObject, GoghObject],
         94 : [GoghObject],
         97 : [GoghObject],
-        108: [GoghObject, GoghBlock],
         109: [GoghObject, GoghBlock],
         110: [GoghObject],
         112: [GoghObject, GoghNumber],
@@ -359,7 +349,7 @@ class Gogh(Director, Stack):
     def _map(self, stos, tos):
         r = [self._runoffstack(tos, i) for i in stos]
         if stos._is(GoghString):
-            self._push("".join(r))
+            self._push("".join(map(str, r)))
         else:
             self._push(r)
 
