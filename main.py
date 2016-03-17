@@ -15,6 +15,13 @@ class Gogh(Director, Stack):
 
     # Storage
 
+    '''
+    Note to self: Remove this list before commiting...
+    Try to add...
+     - loop
+     - map
+    '''
+
     _dreq = "_noop"
     _req2func = {
         0  : "_output",
@@ -32,8 +39,11 @@ class Gogh(Director, Stack):
         63 : "_keepif_construct",
         64 : "_ifelse_execute",
         82 : "_reverse_top",
+        83 : "_split",
         94 : "_negate",
         97 : "_toarray",
+        108: "_loop",
+        109: "_map",
         110: "_tonumber",
         112: "_power",
         114: "_root",
@@ -57,8 +67,11 @@ class Gogh(Director, Stack):
         63 : 2,
         64 : 3,
         82 : 1,
+        83 : 2,
         94 : 1,
         97 : 1,
+        108: 2,
+        109: 2,
         110: 1,
         112: 2,
         114: 2,
@@ -82,8 +95,11 @@ class Gogh(Director, Stack):
         63 : [GoghObject, GoghObject],
         64 : [GoghBlock, GoghBlock, GoghObject],
         82 : [GoghObject],
+        83 : [GoghObject, GoghObject],
         94 : [GoghObject],
         97 : [GoghObject],
+        108: [GoghObject, GoghBlock],
+        109: [GoghObject, GoghBlock],
         110: [GoghObject],
         112: [GoghObject, GoghNumber],
         114: [GoghObject, GoghNumber],
@@ -294,3 +310,51 @@ class Gogh(Director, Stack):
         elif tos._is(GoghArray):
             tos.reverse()
         self._push(tos)
+
+    @Planner.toapprove
+    def _split(self, stos, tos):
+        if stos._is(GoghString):
+            _stos = str(stos)
+        else:
+            _stos = stos
+        if stos._is(GoghArray):
+            if tos._is(GoghNumber):
+                    self._push(_stos[:tos], _stos[tos:])
+            elif tos._is(GoghString):
+                if stos._is(GoghString):
+                    # Remove the `*` to push an array rather than 2 items
+                    self._push(*_stos.split(str(tos)))
+                else:
+                    l = stos.index(tos)
+                    self._push(_stos[:l], _stos[l:])
+            else:
+                self._push(stos)
+        elif stos._is(GoghNumber):
+            if tos._is(GoghString):
+                self._push(tos[:stos], tos[stos:])
+            if tos._is(GoghArray):
+                self._push(tos[:stos], tos[stos:])
+            else:
+                self._push(tos)
+        else:
+            self._push(stos)
+
+    # Looping Operations
+
+    @Planner.toapprove
+    def _loop(self, stos, tos):
+        if stos._is(GoghNumber):
+            stos = str(stos)
+        isstr = stos._is(GoghString)
+
+        for i in stos:
+            pass
+
+        '''
+        code = "".join(repr(e) for e in torun)
+        self._pre(code)
+        '''
+
+    @Planner.toapprove
+    def _map(self, stos, tos):
+        pass
