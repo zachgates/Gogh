@@ -77,6 +77,10 @@ class GoghObject(object):
         """To be written in the subclass."""
         return self
 
+    def join(self, value):
+        """To be written in the subclass."""
+        return self
+
 
 # Numbers (Integers & Decimals)
 
@@ -449,6 +453,12 @@ class GoghArray(list, GoghObject):
             else:
                 temp.append(elem)
         return retval
+
+    def join(self, value):
+        if value._is(GoghBlock):
+            value = "".join(repr(e) for e in value)
+        retval = str(value).join(str(i) for i in self)
+        return GoghString(retval)
 
 
 # Strings

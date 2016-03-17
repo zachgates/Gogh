@@ -31,6 +31,7 @@ class Gogh(Director, Stack):
         62 : "_greaterthan",
         63 : "_keepif_construct",
         64 : "_ifelse_execute",
+        74 : "_join",
         82 : "_reverse_top",
         83 : "_split",
         94 : "_negate",
@@ -58,6 +59,7 @@ class Gogh(Director, Stack):
         62 : 2,
         63 : 2,
         64 : 3,
+        74 : 2,
         82 : 1,
         83 : 2,
         94 : 1,
@@ -85,6 +87,7 @@ class Gogh(Director, Stack):
         62 : [GoghObject, GoghObject],
         63 : [GoghObject, GoghObject],
         64 : [GoghBlock, GoghBlock, GoghObject],
+        74 : [GoghObject, GoghObject],
         82 : [GoghObject],
         83 : [GoghObject, GoghObject],
         94 : [GoghObject],
@@ -98,6 +101,7 @@ class Gogh(Director, Stack):
         247: [GoghObject, GoghBlock],
     }
     _req2default = {
+        74 : [NotImplemented, GoghString("")],
         112: [NotImplemented, GoghInteger(2)],
         114: [NotImplemented, GoghInteger(2)],
     }
@@ -315,3 +319,7 @@ class Gogh(Director, Stack):
     @Planner.toapprove
     def _split(self, stos, tos):
         self._push(stos.split(tos))
+
+    @Planner.toapprove
+    def _join(self, stos, tos):
+        self._push(stos.join(tos))
