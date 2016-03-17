@@ -40,6 +40,7 @@ class Gogh(Director, Stack):
         115: "_tostring",
         120: "_execute",
         151: "_print_top",
+        247: "_exec_off_stack",
     }
     _req2arities = {
         0  : 1,
@@ -65,6 +66,7 @@ class Gogh(Director, Stack):
         115: 1,
         120: 1,
         151: 1,
+        247: 2,
     }
     _req2argtype = {
         0  : [GoghObject],
@@ -90,6 +92,7 @@ class Gogh(Director, Stack):
         115: [GoghObject],
         120: [GoghBlock],
         151: [GoghObject],
+        247: [GoghObject, GoghBlock],
     }
     _req2default = {
         112: [NotImplemented, GoghInteger(2)],
@@ -103,7 +106,7 @@ class Gogh(Director, Stack):
 
     # Controllers
 
-    def __init__(self, code, ip, out, err, endchar):
+    def __init__(self, code, ip, out, err, endchar, wantexit=True):
         Director.__init__(self, out, endchar)
         Stack.__init__(self, ip)
         if err != None:
@@ -112,8 +115,9 @@ class Gogh(Director, Stack):
         self.intreg = None
         self.strreg = None
         self.strlit = False
-        self.frames = self._pre(code)
-        self._exit(0)
+        self._pre(code)
+        if wantexit:
+            self._exit(0)
 
     def _tokenize(self, code):
         blocks = re.findall('"[^"]+"|[0-9.]+|{[^}]+}|.', code)
@@ -147,6 +151,11 @@ class Gogh(Director, Stack):
                 reqcode = code_page.index(elem) if elem != "\n" else 32
                 self.cchar = elem
                 self._request(reqcode)
+
+    def _runoffstack(self, code, ip=None):
+        code = "".join(repr(e) for e in code)
+        throwaway = Gogh(code, ip, False, None, "", False)
+        return throwaway._TOS
 
     def _request(self, action):
         areq = self._req2func.get(action, self._dreq)
@@ -284,6 +293,11 @@ class Gogh(Director, Stack):
             torun = stos
         code = "".join(repr(e) for e in torun)
         self._pre(code)
+
+    @Planner.toapprove
+    def _exec_off_stack(self, stos, tos):
+        retval = self._runoffstack(tos, stos)
+        self._push(retval)
 
     # Array Operations
 
