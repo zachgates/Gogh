@@ -32,6 +32,7 @@ class Gogh(Director, Stack):
         63 : "_keepif_construct",
         64 : "_ifelse_execute",
         82 : "_reverse_top",
+        83 : "_split",
         94 : "_negate",
         97 : "_toarray",
         110: "_tonumber",
@@ -58,6 +59,7 @@ class Gogh(Director, Stack):
         63 : 2,
         64 : 3,
         82 : 1,
+        83 : 2,
         94 : 1,
         97 : 1,
         110: 1,
@@ -84,6 +86,7 @@ class Gogh(Director, Stack):
         63 : [GoghObject, GoghObject],
         64 : [GoghBlock, GoghBlock, GoghObject],
         82 : [GoghObject],
+        83 : [GoghObject, GoghObject],
         94 : [GoghObject],
         97 : [GoghObject],
         110: [GoghObject],
@@ -308,3 +311,7 @@ class Gogh(Director, Stack):
         elif tos._is(GoghArray):
             tos.reverse()
         self._push(tos)
+
+    @Planner.toapprove
+    def _split(self, stos, tos):
+        self._push(stos.split(tos))

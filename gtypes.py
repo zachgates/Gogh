@@ -73,6 +73,10 @@ class GoghObject(object):
         """To be written in the subclass."""
         return True
 
+    def split(self, value):
+        """To be written in the subclass."""
+        return self
+
 
 # Numbers (Integers & Decimals)
 
@@ -184,6 +188,16 @@ class GoghNumber(GoghObject):
                 return GoghDecimal(round(retval, prec))
             else:
                 return GoghInteger(retval)
+        else:
+            return self
+
+    def split(self, value):
+        if value._is(GoghNumber):
+            mid = (float(self) + float(value)) / 2
+            if mid % 1:
+                return GoghDecimal(mid)
+            else:
+                return GoghInteger(mid)
         else:
             return self
 
@@ -425,6 +439,17 @@ class GoghArray(list, GoghObject):
         else:
             return True
 
+    def split(self, value):
+        retval = GoghArray([])
+        temp = GoghArray([])
+        for elem in self:
+            if elem == value:
+                retval.append(temp)
+                temp = GoghArray([])
+            else:
+                temp.append(elem)
+        return retval
+
 
 # Strings
 
@@ -508,6 +533,14 @@ class GoghString(GoghArray):
     def __pow__(self, value):
         if value >= 1:
             return GoghArray(map(lambda i: ord(i) ** value, self))
+        else:
+            return self
+
+    def split(self, value):
+        if value._is((GoghNumber, GoghString)):
+            retval = str(self).split(str(value))
+            retval = [GoghString(elem) for elem in retval]
+            return retval
         else:
             return self
 
