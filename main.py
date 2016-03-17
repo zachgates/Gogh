@@ -353,6 +353,16 @@ class Gogh(Director, Stack):
             for elem in tos:
                 self._push(elem)
 
+    # Looping Functions
+
+    @Planner.toapprove
+    def _map(self, stos, tos):
+        r = [self._runoffstack(tos, i) for i in stos]
+        if stos._is(GoghString):
+            self._push("".join(r))
+        else:
+            self._push(r)
+
     # Pre-initialized Variables
 
     @Planner.toapprove
