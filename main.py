@@ -33,6 +33,7 @@ class Gogh(Director, Stack):
         63 : "_keepif_construct",
         64 : "_ifelse_execute",
         68 : "_dump",
+        70 : "_fibonacci",
         74 : "_join",
         81 : "_nth_sequence",
         82 : "_reverse_top",
@@ -68,6 +69,7 @@ class Gogh(Director, Stack):
         63 : 2,
         64 : 3,
         68 : 1,
+        70 : 1,
         74 : 2,
         81 : 2,
         82 : 1,
@@ -99,6 +101,7 @@ class Gogh(Director, Stack):
         63 : [GoghObject, GoghObject],
         64 : [GoghBlock, GoghBlock, GoghObject],
         68 : [GoghObject],
+        70 : [GoghObject],
         74 : [GoghObject, GoghObject],
         81 : [GoghNumber, GoghObject],
         82 : [GoghObject],
@@ -160,7 +163,8 @@ class Gogh(Director, Stack):
     def _run(self, code):
         blocks = self._tokenize(code)
         for elem in blocks:
-            if (code_page.find(elem[0]) == 34) or (elem in string.digits):
+            isnum = all(e in string.digits for e in elem)
+            if (code_page.find(elem[0]) == 34) or isnum:
                 self._push(eval(elem))
             elif re.match("(\d+)?\.([\d.]+)?", elem):
                 elem = elem.split(".", 1)
@@ -193,6 +197,27 @@ class Gogh(Director, Stack):
         self.broadcast(code)
 
     # Manipulators
+
+    class _fibo(object):
+
+        def __init__(self, n):
+            self.n = n
+            self.idx = 0
+            self.last = [1, 1]
+
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            if self.idx > self.n:
+                raise StopIteration
+            else:
+                self.idx += 1
+                if self.idx < 3:
+                    return 1
+                new = sum(self.last)
+                self.last = [self.last[1], new]
+                return new
 
     # I/O Operators
 
@@ -377,3 +402,17 @@ class Gogh(Director, Stack):
     @Planner.toapprove
     def _hundred(self):
         self._push(GoghInteger(100))
+
+    # Various Operations
+
+    @Planner.toapprove
+    def _fibonacci(self, tos):
+        if tos._is(GoghBlock):
+            self._push(tos)
+            return
+        elif tos._is(GoghArray):
+            tos = len(tos)
+        else:
+            tos = int(tos)
+        fib = Gogh._fibo(tos-1)
+        self._push(GoghArray(fib))

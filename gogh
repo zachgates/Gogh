@@ -21,9 +21,10 @@ class clist(list):
 
     def _read(self, rems, reps):
         for val in rems:
+            isnum = all(e in string.digits for e in val)
             if not val:
                 yield gtypes.GoghString(reps.pop(0))
-            elif val in string.digits:
+            elif isnum:
                 yield gtypes.GoghInteger(val)
             elif re.match(clist.f_regex, val):
                 yield gtypes.GoghDecimal(val)
