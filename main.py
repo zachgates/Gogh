@@ -36,6 +36,7 @@ class Gogh(Director, Stack):
         63 : "_keepif_construct",
         64 : "_ifelse_execute",
         68 : "_dump",
+        69 : "_range_n",
         70 : "_fibonacci",
         71 : "_range",
         74 : "_join",
@@ -79,6 +80,7 @@ class Gogh(Director, Stack):
         63 : 2,
         64 : 3,
         68 : 1,
+        69 : 2,
         70 : 1,
         71 : 1,
         74 : 2,
@@ -120,6 +122,7 @@ class Gogh(Director, Stack):
         63 : [GoghObject, GoghObject],
         64 : [GoghBlock, GoghBlock, GoghObject],
         68 : [GoghObject],
+        69 : [GoghObject, GoghObject],
         70 : [GoghObject],
         71 : [GoghObject],
         74 : [GoghObject, GoghObject],
@@ -143,6 +146,7 @@ class Gogh(Director, Stack):
         247: [GoghObject, GoghBlock],
     }
     _req2default = {
+        69 : [GoghInteger(0), GoghInteger(0)],
         74 : [NotImplemented, GoghString("")],
         112: [NotImplemented, GoghInteger(2)],
         114: [NotImplemented, GoghInteger(2)],
@@ -402,7 +406,26 @@ class Gogh(Director, Stack):
             return
         else:
             tos = int(tos)
-        rng = range(1, tos+1)
+        rng = range(1, tos+1) if tos > 0 else range(-1, tos-1, -1)
+        self._push(GoghArray(GoghInteger(e) for e in rng))
+
+    @Planner.toapprove
+    def _range_n(self, stos, tos):
+        if stos._is(GoghBlock):
+            self._push(stos)
+            return
+        elif stos._is(GoghArray):
+            stos = len(stos)
+        else:
+            stos = int(stos)
+        if tos._is(GoghBlock):
+            self._push(tos)
+            return
+        elif tos._is(GoghArray):
+            tos = len(tos)
+        else:
+            tos = int(tos)
+        rng = range(stos, tos) if tos > stos else range(stos, tos, -1)
         self._push(GoghArray(GoghInteger(e) for e in rng))
 
     @Planner.toapprove
