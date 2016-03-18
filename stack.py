@@ -108,7 +108,7 @@ class Stack(list, Planner):
     def _duplicate(self):
         if self._islength(1):
             mv = self._TOS
-            list.__iadd__(self, [mv, mv])
+            list.__iadd__(self, [mv, type(mv)(mv)])
         else:
             self.broadcast(3, 1)
 
