@@ -308,8 +308,7 @@ class Gogh(Director, Stack):
             stos = str(stos)
         if tos._is((GoghNumber, GoghString)):
             tos = str(tos)
-        retval = 1 if stos == tos else 0
-        self._push(GoghInteger(retval))
+        self._push(GoghInteger(1 if stos == tos else 0))
 
     @Planner.toapprove
     def _negate(self, tos):
