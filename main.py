@@ -20,6 +20,7 @@ class Gogh(Director, Stack):
     _req2func = {
         0  : "_output",
         11 : "_keepif_destruct",
+        13 : "_any",
         22 : "_all",
         33 : "_lognot",
         37 : "_modulo",
@@ -57,6 +58,7 @@ class Gogh(Director, Stack):
     _req2arities = {
         0  : 1,
         11 : 2,
+        13 : 1,
         22 : 1,
         33 : 1,
         37 : 2,
@@ -92,6 +94,7 @@ class Gogh(Director, Stack):
     _req2argtype = {
         0  : [GoghObject],
         11 : [GoghObject, GoghObject],
+        13 : [GoghObject],
         22 : [GoghObject],
         33 : [GoghObject],
         37 : [GoghObject, GoghObject],
@@ -411,6 +414,13 @@ class Gogh(Director, Stack):
             self._push(GoghInteger(bool(tos)))
         else:
             self._push(GoghInteger(all(tos)))
+
+    @Planner.toapprove
+    def _any(self, tos):
+        if tos._is((GoghNumber, GoghBlock)):
+            self._push(GoghInteger(bool(tos)))
+        else:
+            self._push(GoghInteger(any(tos)))
 
     # Pre-initialized Variables
 
