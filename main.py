@@ -43,6 +43,7 @@ class Gogh(Director, Stack):
         83 : "_split",
         94 : "_negate",
         97 : "_toarray",
+        103: "_range",
         109: "_map",
         110: "_tonumber",
         112: "_power",
@@ -82,6 +83,7 @@ class Gogh(Director, Stack):
         83 : 2,
         94 : 1,
         97 : 1,
+        103: 1,
         109: 2,
         110: 1,
         112: 2,
@@ -119,6 +121,7 @@ class Gogh(Director, Stack):
         83 : [GoghObject, GoghObject],
         94 : [GoghObject],
         97 : [GoghObject],
+        103: [GoghObject],
         109: [GoghObject, GoghBlock],
         110: [GoghObject],
         112: [GoghObject, GoghNumber],
@@ -371,6 +374,18 @@ class Gogh(Director, Stack):
         self._push(retval)
 
     # Array Operations
+
+    @Planner.toapprove
+    def _range(self, tos):
+        if tos._is(GoghArray):
+            tos = len(tos)
+        elif tos._is(GoghBlock):
+            self._push(tos)
+            return
+        else:
+            tos = int(tos)
+        rng = range(1, tos+1)
+        self._push(GoghArray(GoghInteger(e) for e in rng))
 
     @Planner.toapprove
     def _reverse_top(self, tos):
