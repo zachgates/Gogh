@@ -20,6 +20,7 @@ class Gogh(Director, Stack):
     _req2func = {
         0  : "_output",
         11 : "_keepif_destruct",
+        22 : "_all",
         33 : "_lognot",
         37 : "_modulo",
         39 : "_out_top",
@@ -56,6 +57,7 @@ class Gogh(Director, Stack):
     _req2arities = {
         0  : 1,
         11 : 2,
+        22 : 1,
         33 : 1,
         37 : 2,
         39 : 1,
@@ -90,6 +92,7 @@ class Gogh(Director, Stack):
     _req2argtype = {
         0  : [GoghObject],
         11 : [GoghObject, GoghObject],
+        22 : [GoghObject],
         33 : [GoghObject],
         37 : [GoghObject, GoghObject],
         39 : [GoghObject],
@@ -401,6 +404,13 @@ class Gogh(Director, Stack):
         else:
             mpd = GoghArray(self._runoffstack(tos, e) for e in stos)
             self._push(mpd)
+
+    @Planner.toapprove
+    def _all(self, tos):
+        if tos._is((GoghNumber, GoghBlock)):
+            self._push(GoghInteger(bool(tos)))
+        else:
+            self._push(GoghInteger(all(tos)))
 
     # Pre-initialized Variables
 
