@@ -39,6 +39,7 @@ class Gogh(Director, Stack):
         70 : "_fibonacci",
         71 : "_range",
         74 : "_join",
+        80 : "_prepend",
         81 : "_nth_sequence",
         82 : "_reverse_top",
         83 : "_split",
@@ -81,6 +82,7 @@ class Gogh(Director, Stack):
         70 : 1,
         71 : 1,
         74 : 2,
+        80 : 2,
         81 : 2,
         82 : 1,
         83 : 2,
@@ -121,6 +123,7 @@ class Gogh(Director, Stack):
         70 : [GoghObject],
         71 : [GoghObject],
         74 : [GoghObject, GoghObject],
+        80 : [GoghArray, GoghObject],
         81 : [GoghInteger, GoghBlock],
         82 : [GoghObject],
         83 : [GoghObject, GoghObject],
@@ -430,6 +433,14 @@ class Gogh(Director, Stack):
     def _sort(self, tos):
         tos.sort()
         self._push(tos)
+
+    @Planner.toapprove
+    def _prepend(self, stos, tos):
+        if stos._is(GoghString) and tos._is(GoghString):
+            self._push(tos + stos)
+        else:
+            stos.insert(0, tos)
+            self._push(stos)
 
     # Looping Functions
 
