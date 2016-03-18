@@ -35,6 +35,7 @@ class Gogh(Director, Stack):
         68 : "_dump",
         70 : "_fibonacci",
         74 : "_join",
+        81 : "_nth_sequence",
         82 : "_reverse_top",
         83 : "_split",
         94 : "_negate",
@@ -70,6 +71,7 @@ class Gogh(Director, Stack):
         68 : 1,
         70 : 1,
         74 : 2,
+        81 : 2,
         82 : 1,
         83 : 2,
         94 : 1,
@@ -103,6 +105,7 @@ class Gogh(Director, Stack):
         68 : [GoghObject],
         70 : [GoghObject],
         74 : [GoghObject, GoghObject],
+        81 : [GoghInteger, GoghBlock],
         82 : [GoghObject],
         83 : [GoghObject, GoghObject],
         94 : [GoghObject],
@@ -376,6 +379,16 @@ class Gogh(Director, Stack):
                 self._push(elem)
 
     # Looping Functions
+
+    @Planner.toapprove
+    def _nth_sequence(self, stos, tos):
+        i = 0 # Iteration
+        j = []
+        if int(stos) < 0: stos = 0
+        while len(j) < int(stos):
+            if bool(self._runoffstack(tos, i)): j.append(i)
+            i += 1
+        self._push(j[-1] if len(j) == int(stos) and j else 0)
 
     @Planner.toapprove
     def _map(self, stos, tos):
