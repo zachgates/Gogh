@@ -158,6 +158,9 @@ class Gogh(Director, Stack):
 
     def _tokenize(self, code):
         blocks = re.findall('"[^"]+"|[0-9.]+|{[^}]+}|.', code)
+        if '"' in blocks:
+            blocks.append('"')
+            return self._tokenize("".join(blocks))
         return blocks
 
     def _pre(self, code):
