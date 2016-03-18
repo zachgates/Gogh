@@ -380,7 +380,7 @@ class Gogh(Director, Stack):
     def _nth_sequence(self, stos, tos):
         i = 0 # Iteration
         j = []
-        if int(stos) < 0: raise ValueError('sequence index must be positive')
+        if int(stos) < 0: stos = 0
         while len(j) < int(stos):
             if bool(self._runoffstack(tos, i)): j.append(i)
             i += 1
