@@ -37,13 +37,14 @@ class Gogh(Director, Stack):
         64 : "_ifelse_execute",
         68 : "_dump",
         70 : "_fibonacci",
+        71 : "_range",
         74 : "_join",
         81 : "_nth_sequence",
         82 : "_reverse_top",
         83 : "_split",
         94 : "_negate",
         97 : "_toarray",
-        103: "_range",
+        101: "_isprime",
         109: "_map",
         110: "_tonumber",
         112: "_power",
@@ -77,13 +78,14 @@ class Gogh(Director, Stack):
         64 : 3,
         68 : 1,
         70 : 1,
+        71 : 1,
         74 : 2,
         81 : 2,
         82 : 1,
         83 : 2,
         94 : 1,
         97 : 1,
-        103: 1,
+        101: 1,
         109: 2,
         110: 1,
         112: 2,
@@ -115,13 +117,14 @@ class Gogh(Director, Stack):
         64 : [GoghBlock, GoghBlock, GoghObject],
         68 : [GoghObject],
         70 : [GoghObject],
+        71 : [GoghObject],
         74 : [GoghObject, GoghObject],
         81 : [GoghInteger, GoghBlock],
         82 : [GoghObject],
         83 : [GoghObject, GoghObject],
         94 : [GoghObject],
         97 : [GoghObject],
-        103: [GoghObject],
+        101: [GoghInteger],
         109: [GoghObject, GoghBlock],
         110: [GoghObject],
         112: [GoghObject, GoghNumber],
@@ -329,6 +332,15 @@ class Gogh(Director, Stack):
             self._push(GoghInteger(retval // 1))
         else:
             self._push(retval)
+
+    @Planner.toapprove
+    def _isprime(self, tos):
+        tos = int(tos)
+        for i in range(2, tos-1):
+            if tos % i == 0:
+                self._push(GoghInteger(0))
+                return
+        self._push(GoghInteger(1))
 
     # Control Operations
 
