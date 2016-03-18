@@ -126,7 +126,7 @@ class Gogh(Director, Stack):
         70 : [GoghObject],
         71 : [GoghObject],
         74 : [GoghObject, GoghObject],
-        80 : [GoghArray, GoghObject],
+        80 : [GoghObject, GoghObject],
         81 : [GoghInteger, GoghBlock],
         82 : [GoghObject],
         83 : [GoghObject, GoghObject],
@@ -461,7 +461,13 @@ class Gogh(Director, Stack):
     def _prepend(self, stos, tos):
         if stos._is(GoghString) and tos._is(GoghString):
             self._push(tos + stos)
-        else:
+        if not stos._is(GoghArray) and tos._is(GoghArray):
+            if not tos._is(GoghString):
+                tos.append(stos)
+                self._push(tos)
+            else:
+                self._push(GoghString(str(tos) + str(stos)))
+        elif stos._is(GoghArray):
             stos.insert(0, tos)
             self._push(stos)
 
