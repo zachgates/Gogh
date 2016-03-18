@@ -304,10 +304,8 @@ class Gogh(Director, Stack):
 
     @Planner.toapprove
     def _equals(self, stos, tos):
-        if stos._is((GoghNumber, GoghString)):
-            stos = str(stos)
-        if tos._is((GoghNumber, GoghString)):
-            tos = str(tos)
+        stos = str(stos) if stos._is((GoghNumber, GoghString)) else stos
+        tos = str(tos) if tos._is((GoghNumber, GoghString)) else tos
         self._push(GoghInteger(1 if stos == tos else 0))
 
     @Planner.toapprove
