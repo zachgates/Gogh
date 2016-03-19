@@ -48,6 +48,7 @@ class Gogh(Director, Stack):
         94 : "_negate",
         97 : "_toarray",
         101: "_isprime",
+        103: "_fullmatch",
         109: "_map",
         110: "_tonumber",
         112: "_power",
@@ -92,6 +93,7 @@ class Gogh(Director, Stack):
         94 : 1,
         97 : 1,
         101: 1,
+        103: 2,
         109: 2,
         110: 1,
         112: 2,
@@ -134,6 +136,7 @@ class Gogh(Director, Stack):
         94 : [GoghObject],
         97 : [GoghObject],
         101: [GoghInteger],
+        103: [GoghString, GoghString],
         109: [GoghObject, GoghBlock],
         110: [GoghObject],
         112: [GoghObject, GoghNumber],
@@ -540,3 +543,11 @@ class Gogh(Director, Stack):
             tos = int(tos)
         fib = Gogh._fibo(tos-1)
         self._push(GoghArray(fib))
+
+    @Planner.toapprove
+    def _fullmatch(self, stos, tos):
+        retval = re.fullmatch(str(tos), str(stos))
+        if retval:
+            self._push(GoghInteger(1))
+        else:
+            self._push(GoghInteger(0))

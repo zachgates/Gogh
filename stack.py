@@ -152,6 +152,7 @@ class Stack(list, Planner):
     @Planner.toapprove
     def _ltrans(self, n):
         if self._islength(2):
+            n = int(n)
             while n > 0:
                 list.__iadd__(self, [self._BOS])
                 n -= 1
@@ -159,6 +160,7 @@ class Stack(list, Planner):
     @Planner.toapprove
     def _rtrans(self, n):
         if self._islength(2):
+            n = int(n)
             while n > 0:
                 list.insert(self, 0, self._TOS)
                 n -= 1
