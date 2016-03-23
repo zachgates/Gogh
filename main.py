@@ -35,6 +35,8 @@ class Gogh(Director, Stack):
         62 : "_greaterthan",
         63 : "_keepif_construct",
         64 : "_ifelse_execute",
+        66 : "_base2",
+        67 : "_base10",
         68 : "_dump",
         69 : "_range_n",
         70 : "_fibonacci",
@@ -80,6 +82,8 @@ class Gogh(Director, Stack):
         62 : 2,
         63 : 2,
         64 : 3,
+        66 : 1,
+        67 : 1,
         68 : 1,
         69 : 2,
         70 : 1,
@@ -123,6 +127,8 @@ class Gogh(Director, Stack):
         62 : [GoghObject, GoghObject],
         63 : [GoghObject, GoghObject],
         64 : [GoghBlock, GoghBlock, GoghObject],
+        66 : [GoghInteger],
+        67 : [GoghString],
         68 : [GoghObject],
         69 : [GoghObject, GoghObject],
         70 : [GoghObject],
@@ -551,3 +557,11 @@ class Gogh(Director, Stack):
             self._push(GoghInteger(1))
         else:
             self._push(GoghInteger(0))
+
+    @Planner.toapprove
+    def _base2(self, tos):
+        self._push("{0:08b}".format(int(tos)))
+
+    @Planner.toapprove
+    def _base10(self, tos):
+        self._push(int(str(tos), 2))

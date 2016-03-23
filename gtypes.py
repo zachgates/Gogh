@@ -541,8 +541,8 @@ class GoghString(GoghArray):
     def __truediv__(self, value):
         if value._is(GoghInteger) and value >= 1:
             sp = lambda: self._splice(0, value)
-            chunks = [sp() for _ in range(len(self) // int(value) + 1)]
-            return GoghArray([GoghString(e) for e in filter(None, chunks)])
+            cs = [sp() for _ in range(len(self) // int(value) + 1)]
+            return GoghArray([GoghString("".join(e)) for e in filter(None, cs)])
         elif value._is(GoghString):
             return GoghInteger(str(self).count(str(value)))
         else:
