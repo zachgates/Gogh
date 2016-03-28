@@ -51,6 +51,7 @@ class Gogh(Director, Stack):
         94 : "_negate",
         97 : "_toarray",
         101: "_isprime",
+        102: "_diff",
         103: "_fullmatch",
         109: "_map",
         110: "_tonumber",
@@ -99,6 +100,7 @@ class Gogh(Director, Stack):
         94 : 1,
         97 : 1,
         101: 1,
+        102: 1,
         103: 2,
         109: 2,
         110: 1,
@@ -145,6 +147,7 @@ class Gogh(Director, Stack):
         94 : [GoghObject],
         97 : [GoghObject],
         101: [GoghInteger],
+        102: [GoghArray],
         103: [GoghString, GoghString],
         109: [GoghObject, GoghBlock],
         110: [GoghObject],
@@ -492,6 +495,19 @@ class Gogh(Director, Stack):
                 i = tos.pop(0)
                 while tos:
                     i = i + tos.pop(0)
+                self._push(i)
+            else:
+                self._push(tos)
+
+    @Planner.toapprove
+    def _diff(self, tos):
+        if tos._is(GoghString):
+            self._push(tos)
+        else:
+            if len(tos) > 1:
+                i = tos.pop(0)
+                while tos:
+                    i = i - tos.pop(0)
                 self._push(i)
             else:
                 self._push(tos)
