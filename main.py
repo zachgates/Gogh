@@ -47,6 +47,7 @@ class Gogh(Director, Stack):
         82 : "_reverse_top",
         83 : "_split",
         84 : "_sort",
+        85 : "_sum",
         94 : "_negate",
         97 : "_toarray",
         101: "_isprime",
@@ -94,6 +95,7 @@ class Gogh(Director, Stack):
         82 : 1,
         83 : 2,
         84 : 1,
+        85 : 1,
         94 : 1,
         97 : 1,
         101: 1,
@@ -139,6 +141,7 @@ class Gogh(Director, Stack):
         82 : [GoghObject],
         83 : [GoghObject, GoghObject],
         84 : [GoghArray],
+        85 : [GoghArray],
         94 : [GoghObject],
         97 : [GoghObject],
         101: [GoghInteger],
@@ -479,6 +482,19 @@ class Gogh(Director, Stack):
         elif stos._is(GoghArray):
             stos.insert(0, tos)
             self._push(stos)
+
+    @Planner.toapprove
+    def _sum(self, tos):
+        if tos._is(GoghString):
+            self._push(tos)
+        else:
+            if len(tos) > 1:
+                i = tos.pop(0)
+                while tos:
+                    i = i + tos.pop(0)
+                self._push(i)
+            else:
+                self._push(tos)
 
     # Looping Functions
 
