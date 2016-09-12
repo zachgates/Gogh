@@ -53,7 +53,7 @@ class GoghCLIHandler(object):
         self.err = None if (flags != None) and (code != None) else [1]
         if (flags != None) and ("f" in flags) and (code != None):
             if os.path.isfile(code):
-                with open(code, 'rb') as f:
+                with open(code, 'r') as f:
                     self.code = f.read()
             else:
                 self.err = [2, code]
